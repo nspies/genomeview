@@ -1,4 +1,4 @@
-from track import Track
+from genomeview.track import Track
 
 class Interval:
     def __init__(self, id_, chrom, start, end, strand="+", label=None):

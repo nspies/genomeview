@@ -1,6 +1,6 @@
 import math
 
-from track import Track
+from genomeview.track import Track
 
 class Axis(Track):
     def __init__(self):

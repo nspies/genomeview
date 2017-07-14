@@ -1,8 +1,7 @@
 import collections
 
 
-from svg import Renderer, SVG
-from genosv.app import genomesource
+from genomeview.svg import Renderer, SVG
 
 
 class Document:
@@ -157,6 +156,8 @@ if __name__ == "__main__":
     from track import Track
     from bamtrack import PairedEndBAMTrack
     from axis import Axis
+
+    from genosv.app import genomesource
 
     sources = {"genome":genomesource.FastaGenomeSource("/Volumes/frida/nspies/data/bwa-hg19/hg19.fasta")}
     gv = GenomeView("ref", "chr2", 67195617, 67196817, "+", sources["genome"])

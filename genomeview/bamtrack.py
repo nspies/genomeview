@@ -1,8 +1,8 @@
 import collections
 import pysam
 
-from intervaltrack import Interval, IntervalTrack
-from quickconsensus import MismatchCounts
+from genomeview.intervaltrack import Interval, IntervalTrack
+from genomeview.quickconsensus import MismatchCounts
 
 
 class SingleEndBAMTrack(IntervalTrack):
