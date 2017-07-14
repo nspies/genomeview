@@ -11,14 +11,15 @@ class SingleEndBAMTrack(IntervalTrack):
         
         self.bam = pysam.AlignmentFile(bam_path)
         self.intervals = []
+        self.mismatch_counts = None
         
         self.nuc_colors = {"A":"blue", "C":"orange", "G":"green", "T":"black", "N":"gray"}
         self.insertion_color = "cyan"
         self.clipping_color = "cyan"
         self.deletion_color = "gray"
-        self.overlap_color = "lime"
 
-        self.mismatch_counts = None
+        self.quick_consensus = True
+        self.draw_mismatches = True
 
     def __iter__(self):
         for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
@@ -33,15 +34,18 @@ class SingleEndBAMTrack(IntervalTrack):
         self.reset_mismatch_counts()
 
     def reset_mismatch_counts(self):
-        self.mismatch_counts = MismatchCounts(self.scale.chrom, self.scale.start, self.scale.end)
-        self.mismatch_counts.tally_reads(self.bam)
+        if self.quick_consensus and self.draw_mismatches:
+            self.mismatch_counts = MismatchCounts(self.scale.chrom, self.scale.start, self.scale.end)
+            self.mismatch_counts.tally_reads(self.bam)
 
     def layout_interval(self, interval, label=None):
         super().layout_interval(interval, label)
 
     def draw_interval(self, renderer, interval, label=None):
         yield from super().draw_interval(renderer, interval, label)
-        yield from self._draw_cigar(renderer, interval.read)
+
+        if self.draw_mismatches:
+            yield from self._draw_cigar(renderer, interval.read)
 
     def _draw_cigar(self, renderer, read):
         min_width = 2
@@ -95,21 +99,27 @@ class SingleEndBAMTrack(IntervalTrack):
                     yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.insertion_color, **extras)
                 sequence_position += length
             elif code in [4, 5]: #"HS":
-                # always draw clipping, irrespective of consensus sequence or mode
-                curstart = self.scale.topixels(genome_position-0.5)
-                curend = self.scale.topixels(genome_position+0.5)
+                if length >= 5:
+                    # always draw clipping, irrespective of consensus sequence or mode
+                    curstart = self.scale.topixels(genome_position-0.5)
+                    curend = self.scale.topixels(genome_position+0.5)
 
-                width = max(curend-curstart, min_width*2)
-                midpoint = (curstart+curend)/2
+                    width = max(curend-curstart, min_width*2)
+                    midpoint = (curstart+curend)/2
 
-                yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color, **extras)
+                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color, **extras)
 
                 sequence_position += length
 
 
 
 
-class PairedEndBAMTrack(SingleEndBAMTrack):        
+class PairedEndBAMTrack(SingleEndBAMTrack):
+    def __init__(self, bam_path):
+        super().__init__(bam_path)
+
+        self.overlap_color = "lime"
+
     def layout(self, scale):
         if scale == self.scale: return
         

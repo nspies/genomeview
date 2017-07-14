@@ -28,7 +28,6 @@ class Axis(Track):
                 x = max(x, self.scale.pixel_width-5)
 
 
-            print(label, anchor)
             yield from renderer.text(x, 35, label, anchor=anchor, size=12)
 
 def get_ticks(start, end, target_n_labels=10):
