@@ -100,6 +100,9 @@ class Renderer:
     def line_with_arrows(self, x1, y1, x2, y2, *args, **kwdargs):
         yield from self.backend.line_with_arrows(x1+self.x, y1+self.y, x2+self.x, y2+self.y, *args, **kwdargs)
 
+    def arrow(self, x, y, *args, **kwdargs):
+        yield from self.backend.arrow(x+self.x, y+self.y, *args, **kwdargs)
+
     def render(self, element):
         yield "<!-- {} -->".format(element.name)
         yield from self.backend.start_clipped_group(self.x, self.y, self.width, self.height, self.id)

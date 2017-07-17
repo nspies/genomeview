@@ -3,8 +3,8 @@ import math
 from genomeview.track import Track
 
 class Axis(Track):
-    def __init__(self):
-        self.name = None
+    def __init__(self, name):
+        self.name = name
         self.scale = None
 
         self.height = 50
@@ -18,7 +18,7 @@ class Axis(Track):
             x = self.scale.topixels(tick)
             if x < 0 or x > self.scale.pixel_width: continue
 
-            yield from renderer.line(x, 5, x, 25)
+            yield from renderer.line(x, 0, x, 20)
             anchor = "middle"
             if x < 50 and i == 0:
                 anchor = "start"
@@ -28,7 +28,7 @@ class Axis(Track):
                 x = max(x, self.scale.pixel_width-5)
 
 
-            yield from renderer.text(x, 35, label, anchor=anchor, size=12)
+            yield from renderer.text(x, 35, label, anchor=anchor, size=16)
 
 def get_ticks(start, end, target_n_labels=10):
     ticks = []
