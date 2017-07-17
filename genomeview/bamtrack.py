@@ -54,10 +54,10 @@ class SingleEndBAMTrack(IntervalTrack):
 
         genome_position = read.reference_start
         sequence_position = 0
+        alnseq = read.query_sequence
 
         extras = {"stroke":"none"}
 
-        alnseq = read.query_sequence
         for code, length in read.cigartuples:
             length = int(length)
             if code == 0: #"M":
@@ -109,7 +109,8 @@ class SingleEndBAMTrack(IntervalTrack):
 
                     yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color, **extras)
 
-                sequence_position += length
+                if code == 4:
+                    sequence_position += length
 
 
 
