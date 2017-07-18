@@ -10,7 +10,7 @@ class SingleEndBAMTrack(IntervalTrack):
         super().__init__([])
         
         self.bam = pysam.AlignmentFile(bam_path)
-        self.intervals = []
+        self.intervals = self
         self.mismatch_counts = None
         
         self.nuc_colors = {"A":"blue", "C":"orange", "G":"green", "T":"black", "N":"gray"}
@@ -22,12 +22,15 @@ class SingleEndBAMTrack(IntervalTrack):
         self.draw_mismatches = True
 
     def __iter__(self):
+        c = 0
         for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
+            c += 1
             if read.is_unmapped: continue
-            id_ = "{}_{}".format(read.query_name, 1 if read.is_read1 else 2)
+            id_ = read.query_name 
             interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end)
             interval.read = read
             yield interval
+        print(c)
 
     def layout(self, scale):
         super().layout(scale)

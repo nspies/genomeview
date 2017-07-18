@@ -47,7 +47,6 @@ class IntervalTrack(Track):
     def layout(self, scale):
         super().layout(scale)
         
-        # for chrom_part in scale.chrom_parts_collection:
         for interval in self.intervals:
             self.layout_interval(interval, getattr(interval, "label", None))
             
