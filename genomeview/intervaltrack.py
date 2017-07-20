@@ -14,8 +14,8 @@ class Interval:
 
 
 class IntervalTrack(Track):
-    def __init__(self, intervals):
-        super().__init__()
+    def __init__(self, name, intervals):
+        super().__init__(name)
         self.rows = []
         self.intervals_to_rows = {}
         

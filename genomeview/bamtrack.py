@@ -6,8 +6,8 @@ from genomeview.quickconsensus import MismatchCounts
 
 
 class SingleEndBAMTrack(IntervalTrack):
-    def __init__(self, bam_path):
-        super().__init__([])
+    def __init__(self, name, bam_path):
+        super().__init__(name, [])
         
         self.bam = pysam.AlignmentFile(bam_path)
         self.intervals = self
@@ -119,8 +119,8 @@ class SingleEndBAMTrack(IntervalTrack):
 
 
 class PairedEndBAMTrack(SingleEndBAMTrack):
-    def __init__(self, bam_path):
-        super().__init__(bam_path)
+    def __init__(self, name, bam_path):
+        super().__init__(name, bam_path)
 
         self.overlap_color = "lime"
 
@@ -151,7 +151,7 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
             pair_end = coords[-1][1]
             interval = Interval(read_name, chrom, pair_start, pair_end)
             self.layout_interval(interval)
-            self.intervals.append(interval)
+            #self.intervals.append(interval)
                 
         self.height = (len(self.rows)+1) * (self.row_height+self.margin_y)
     
@@ -206,3 +206,6 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
                 
         for read_name, read in read_buffer.items():
             yield from self.draw_read_pair(renderer, [read])
+        
+        for x in  self.render_label(renderer):
+            yield x
