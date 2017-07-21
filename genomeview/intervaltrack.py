@@ -12,7 +12,13 @@ class Interval:
             strand = {True:"+", False:"-"}[strand]
         self.strand = strand
 
-
+def color_by_strand(interval):
+    # brightness = 0.2 + (cur_reads[0].mapq/40.0*0.8)
+    color = "purple"
+    if interval.strand == "-":
+        color = "red"
+    return color
+    
 class IntervalTrack(Track):
     def __init__(self, name, intervals):
         super().__init__(name)
@@ -25,6 +31,8 @@ class IntervalTrack(Track):
         self.label_distance = 3
         
         self.intervals = intervals
+
+        self.color_fn = color_by_strand
 
     def layout_interval(self, interval, label=None):
         row = 0
@@ -59,9 +67,7 @@ class IntervalTrack(Track):
         row = self.intervals_to_rows[interval.id]
         top = row*(self.row_height+self.margin_y)
         
-        color = "purple"
-        if interval.strand == "-":
-            color = "red"
+        color = self.color_fn(interval)
         temp_label = label
         if label is None:
             temp_label = "{}_{}".format(interval.id, 1 if interval.read.is_read1 else 2)
