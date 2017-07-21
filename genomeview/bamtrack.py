@@ -21,6 +21,8 @@ class SingleEndBAMTrack(IntervalTrack):
         self.quick_consensus = True
         self.draw_mismatches = True
 
+        self.draw_read_labels = False
+
     def __iter__(self):
         c = 0
         for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
@@ -30,6 +32,8 @@ class SingleEndBAMTrack(IntervalTrack):
             interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end, 
                                 not read.is_reverse)
             interval.read = read
+            if self.draw_read_labels:
+                interval.label = read.query_name
             yield interval
         print(c)
 
@@ -42,11 +46,11 @@ class SingleEndBAMTrack(IntervalTrack):
             self.mismatch_counts = MismatchCounts(self.scale.chrom, self.scale.start, self.scale.end)
             self.mismatch_counts.tally_reads(self.bam)
 
-    def layout_interval(self, interval, label=None):
-        super().layout_interval(interval, label)
+    def layout_interval(self, interval):
+        super().layout_interval(interval)
 
-    def draw_interval(self, renderer, interval, label=None):
-        yield from super().draw_interval(renderer, interval, label)
+    def draw_interval(self, renderer, interval):
+        yield from super().draw_interval(renderer, interval)
 
         if self.draw_mismatches:
             yield from self._draw_cigar(renderer, interval.read)
@@ -156,6 +160,8 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
             pair_start = coords[0][0]
             pair_end = coords[-1][1]
             interval = Interval(read_name, chrom, pair_start, pair_end)
+            if self.draw_read_labels:
+                interval.label = read_name
             self.layout_interval(interval)
             #self.intervals.append(interval)
                 
@@ -189,11 +195,19 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
 
             yield from renderer.line(x1, y, x2, y, **{"stroke-width":1, "stroke":"gray"})
         
-        for read_end in reads:
+        for i, read_end in enumerate(reads):
             interval = Interval(read_end.query_name, chrom, read_end.reference_start,
                                 read_end.reference_end, not read_end.is_reverse)
             interval.read = read_end
-            yield from self.draw_interval(renderer, interval, getattr(interval, "label", None))
+            yield from self.draw_interval(renderer, interval)
+
+            if i == 1 and self.draw_read_labels:
+                end = self.scale.topixels(read_end.reference_end)
+                top = row*(self.row_height+self.margin_y)
+
+                yield from renderer.text(end+self.label_distance, top+self.row_height,
+                                         read_end.query_name, anchor="start")
+
             
     def render(self, renderer):
         # for chrom, start, end in self.scale.regions():
