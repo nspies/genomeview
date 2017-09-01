@@ -12,10 +12,16 @@ class Interval:
             strand = {True:"+", False:"-"}[strand]
         self.strand = strand
 
-
+def color_by_strand(interval):
+    # brightness = 0.2 + (cur_reads[0].mapq/40.0*0.8)
+    color = "purple"
+    if interval.strand == "-":
+        color = "red"
+    return color
+    
 class IntervalTrack(Track):
-    def __init__(self, intervals):
-        super().__init__()
+    def __init__(self, name, intervals):
+        super().__init__(name)
         self.rows = []
         self.intervals_to_rows = {}
         
@@ -26,7 +32,9 @@ class IntervalTrack(Track):
         
         self.intervals = intervals
 
-    def layout_interval(self, interval, label=None):
+        self.color_fn = color_by_strand
+
+    def layout_interval(self, interval):
         row = 0
         interval_start = self.scale.topixels(interval.start)
         for row, row_end in enumerate(self.rows):
@@ -37,8 +45,8 @@ class IntervalTrack(Track):
             row = len(self.rows) - 1
         
         new_end = self.scale.topixels(interval.end) + self.margin_x
-        if label is not None:
-            new_end += len(label) * self.row_height * 0.75
+        if interval.label is not None:
+            new_end += len(interval.label) * self.row_height * 0.75
         self.rows[row] = new_end
 
         self.intervals_to_rows[interval.id] = row
@@ -48,27 +56,25 @@ class IntervalTrack(Track):
         super().layout(scale)
         
         for interval in self.intervals:
-            self.layout_interval(interval, getattr(interval, "label", None))
+            self.layout_interval(interval)
             
         self.height = (len(self.rows)+1) * (self.row_height+self.margin_y)
     
-    def draw_interval(self, renderer, interval, label=None):
+    def draw_interval(self, renderer, interval):
         start = self.scale.topixels(interval.start)
         end = self.scale.topixels(interval.end)
         
         row = self.intervals_to_rows[interval.id]
         top = row*(self.row_height+self.margin_y)
         
-        color = "purple"
-        if interval.strand == "-":
-            color = "red"
-        temp_label = label
-        if label is None:
+        color = self.color_fn(interval)
+        temp_label = interval.label
+        if interval.label is None:
             temp_label = "{}_{}".format(interval.id, 1 if interval.read.is_read1 else 2)
         yield from renderer.rect(start, top, end-start, self.row_height, fill=color, **{"stroke":"none", "id":temp_label})
-        if label is not None:
-            yield from renderer.text(end+self.label_distance, top+self.row_height, label, anchor="left")
+        if interval.label is not None:
+            yield from renderer.text(end+self.label_distance, top+self.row_height, interval.label, anchor="start")
         
     def render(self, renderer):
         for interval in self.intervals:
-            yield from self.draw_interval(renderer, interval, getattr(interval, "label", None))
+            yield from self.draw_interval(renderer, interval)

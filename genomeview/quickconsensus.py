@@ -45,6 +45,9 @@ class MismatchCounts(object):
         return self.counts[position,:]
 
     def query(self, type_, start, end=None):
+        if start < self.start or start >= self.end:
+            return False
+
         start -= self.start
         if end is None:
             end = start

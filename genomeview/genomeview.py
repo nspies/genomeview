@@ -13,21 +13,27 @@ class Document:
         self.width = width
         self.renderer = SVG()
         
+        self.margin_x = 5
+        self.margin_y = 5
+
+        self.between_views = 5
+
     def layout(self):
+        self.view_width = self.width - self.margin_x*2
         for element in self.elements:
-            element.layout(self.width)
+            element.layout(self.view_width)
         
     def render(self):
         self.layout()
         
-        total_height = sum(element.height for element in self.elements)
+        total_height = sum(element.height+self.between_views for element in self.elements) + self.margin_y*2
         yield self.header.format(height=total_height, width=self.width)
         
-        cury = 0
+        cury = self.margin_y
         for element in self.elements:
-            renderer = Renderer(self.renderer, 0, cury, self.width, element.height)
+            renderer = Renderer(self.renderer, self.margin_x, cury, self.view_width, element.height)
             yield from renderer.render(element)
-            cury += element.height + 5
+            cury += element.height + self.between_views
             
         yield self.footer
         
@@ -72,7 +78,8 @@ class GenomeView:
 
         self.pixel_width = None
         self.pixel_height = None
-    
+
+        self.margin_y = 10
     
     def add_track(self, track):
         assert track.name not in self.tracks
@@ -85,14 +92,14 @@ class GenomeView:
         self.height = 0
         for name, track in self.tracks.items():
             track.layout(self.scale)
-            self.height += track.height
+            self.height += track.height + self.margin_y
     
     def render(self, renderer):
         cury = 0
         for name, track in self.tracks.items():
             subrenderer = renderer.subrenderer(y=cury, height=track.height)
             yield from subrenderer.render(track)
-            cury += track.height + 5
+            cury += track.height + self.margin_y
         
     
     

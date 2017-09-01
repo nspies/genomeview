@@ -13,11 +13,37 @@ def _addOptions(kwdargs, defaults=None):
     return "".join(options)
 
 class SVG(GraphicsBackend):
-    def text(self, x, y, text, size=10, anchor="middle", fill="", family="Helvetica", **kwdargs):
+    _filter_id = 0
+
+    def text(self, x, y, text, size=10, anchor="middle", family="Helvetica", **kwdargs):
         defaults = {}
         assert anchor in ["start", "middle", "end"]
-        yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" text-anchor="{anchor}" {more}>{text}</text>""".format(
-            x=x, y=y, size=size, anchor=anchor, more=_addOptions(kwdargs, defaults), text=text)
+        yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
+            x=x, y=y, size=size, family=family, anchor=anchor, more=_addOptions(kwdargs, defaults), text=text)
+
+    def text_with_background(self, x, y, text, size=10, anchor="middle", text_color="black", bg="white", **kwdargs):
+        self._filter_id += 1
+
+        text_filter = [
+            """<defs>""",
+            """    <filter x="0" y="0" width="1" height="1" id="solid{}">""".format(self._filter_id),
+            """        <feFlood flood-opacity="0.8" flood-color="{}"/>""".format(bg),
+            """        <feComposite in="SourceGraphic"/>""",
+            """    </filter>""",
+            """</defs>"""]
+        for line in text_filter:
+            yield line
+
+        # this is a stoopid hack to get the filter to be fully behind the text, without making it blurry
+        kwdargs["fill"] = bg
+        kwdargs["filter"] = "url(#solid{})".format(self._filter_id)
+        yield from self.text(x, y, text, size, anchor, **kwdargs)
+
+        kwdargs["fill"] = text_color
+        del kwdargs["filter"]
+        yield from self.text(x, y, text, size, anchor, **kwdargs)
+
+
 
     def rect(self, x, y, width, height, **kwdargs):
         defaults = {"fill":"white", "stroke":"black"}
@@ -90,6 +116,9 @@ class Renderer:
     
     def text(self, x, y, *args, **kwdargs):
         yield from self.backend.text(x+self.x, y+self.y, *args, **kwdargs)
+        
+    def text_with_background(self, x, y, *args, **kwdargs):
+        yield from self.backend.text_with_background(x+self.x, y+self.y, *args, **kwdargs)
         
     def rect(self, x, y, *args, **kwdargs):
         yield from self.backend.rect(x+self.x, y+self.y, *args, **kwdargs)

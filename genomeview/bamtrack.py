@@ -6,8 +6,8 @@ from genomeview.quickconsensus import MismatchCounts
 
 
 class SingleEndBAMTrack(IntervalTrack):
-    def __init__(self, bam_path):
-        super().__init__([])
+    def __init__(self, name, bam_path):
+        super().__init__(name, [])
         
         self.bam = pysam.AlignmentFile(bam_path)
         self.intervals = self
@@ -22,6 +22,9 @@ class SingleEndBAMTrack(IntervalTrack):
         self.draw_mismatches = True
         self.include_secondary = True
         
+        self.draw_read_labels = False
+
+
     def __iter__(self):
         c = 0
         for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
@@ -29,8 +32,11 @@ class SingleEndBAMTrack(IntervalTrack):
             if read.is_unmapped: continue
             if read.is_secondary and not self.include_secondary: continue
             id_ = read.query_name 
-            interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end)
+            interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end, 
+                                not read.is_reverse)
             interval.read = read
+            if self.draw_read_labels:
+                interval.label = read.query_name
             yield interval
         print(c)
 
@@ -43,11 +49,11 @@ class SingleEndBAMTrack(IntervalTrack):
             self.mismatch_counts = MismatchCounts(self.scale.chrom, self.scale.start, self.scale.end)
             self.mismatch_counts.tally_reads(self.bam)
 
-    def layout_interval(self, interval, label=None):
-        super().layout_interval(interval, label)
+    def layout_interval(self, interval):
+        super().layout_interval(interval)
 
-    def draw_interval(self, renderer, interval, label=None):
-        yield from super().draw_interval(renderer, interval, label)
+    def draw_interval(self, renderer, interval):
+        yield from super().draw_interval(renderer, interval)
 
         if self.draw_mismatches:
             yield from self._draw_cigar(renderer, interval.read)
@@ -84,7 +90,8 @@ class SingleEndBAMTrack(IntervalTrack):
                         if not self.mismatch_counts or alt=="N" or self.mismatch_counts.query(alt, genome_position+i):
                             width = max(curend-curstart, min_width)
                             midpoint = (curstart+curend)/2
-                            yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=color, **extras)
+                            yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=color, 
+                                                     **extras)
 
                 sequence_position += length
                 genome_position += length
@@ -92,7 +99,8 @@ class SingleEndBAMTrack(IntervalTrack):
                 if not self.mismatch_counts or self.mismatch_counts.query("DEL", genome_position, genome_position+length+1):
                     curstart = self.scale.topixels(genome_position)
                     curend = self.scale.topixels(genome_position+length+1)
-                    yield from renderer.rect(curstart, yoffset, curend-curstart, self.row_height, fill=self.deletion_color, **extras)
+                    yield from renderer.rect(curstart, yoffset, curend-curstart, self.row_height, fill=self.deletion_color, 
+                                             **extras)
 
                 genome_position += length
             elif code == 1: # I
@@ -103,7 +111,8 @@ class SingleEndBAMTrack(IntervalTrack):
                     width = max(curend-curstart, min_width)
                     midpoint = (curstart+curend)/2
 
-                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.insertion_color, **extras)
+                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.insertion_color,
+                                             **extras)
                 sequence_position += length
             elif code in [4, 5]: #"HS":
                 if length >= 5:
@@ -114,7 +123,8 @@ class SingleEndBAMTrack(IntervalTrack):
                     width = max(curend-curstart, min_width*2)
                     midpoint = (curstart+curend)/2
 
-                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color, **extras)
+                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color,
+                                             **extras)
 
                 if code == 4:
                     sequence_position += length
@@ -123,8 +133,8 @@ class SingleEndBAMTrack(IntervalTrack):
 
 
 class PairedEndBAMTrack(SingleEndBAMTrack):
-    def __init__(self, bam_path):
-        super().__init__(bam_path)
+    def __init__(self, name, bam_path):
+        super().__init__(name, bam_path)
 
         self.overlap_color = "lime"
 
@@ -140,7 +150,8 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
 
         for read in self.bam.fetch(chrom, start, end):
             if read.is_unmapped: continue
-            cur_read_coords[read.query_name].append((read.reference_start, read.reference_end, read.next_reference_start, read.is_proper_pair))
+            cur_read_coords[read.query_name].append(
+                (read.reference_start, read.reference_end, read.next_reference_start, read.is_proper_pair))
         
         # a bit of hocus-pocus to deal with reads whose mates map outside of our region of interest
         for pair in cur_read_coords.values():
@@ -154,8 +165,10 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
             pair_start = coords[0][0]
             pair_end = coords[-1][1]
             interval = Interval(read_name, chrom, pair_start, pair_end)
+            if self.draw_read_labels:
+                interval.label = read_name
             self.layout_interval(interval)
-            self.intervals.append(interval)
+            #self.intervals.append(interval)
                 
         self.height = (len(self.rows)+1) * (self.row_height+self.margin_y)
     
@@ -187,10 +200,19 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
 
             yield from renderer.line(x1, y, x2, y, **{"stroke-width":1, "stroke":"gray"})
         
-        for read_end in reads:
-            interval = Interval(read_end.query_name, chrom, read_end.reference_start, read_end.reference_end, not read_end.is_reverse)
+        for i, read_end in enumerate(reads):
+            interval = Interval(read_end.query_name, chrom, read_end.reference_start,
+                                read_end.reference_end, not read_end.is_reverse)
             interval.read = read_end
-            yield from self.draw_interval(renderer, interval, getattr(interval, "label", None))
+            yield from self.draw_interval(renderer, interval)
+
+            if i == 1 and self.draw_read_labels:
+                end = self.scale.topixels(read_end.reference_end)
+                top = row*(self.row_height+self.margin_y)
+
+                yield from renderer.text(end+self.label_distance, top+self.row_height,
+                                         read_end.query_name, anchor="start")
+
             
     def render(self, renderer):
         # for chrom, start, end in self.scale.regions():
@@ -210,3 +232,6 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
                 
         for read_name, read in read_buffer.items():
             yield from self.draw_read_pair(renderer, [read])
+        
+        for x in  self.render_label(renderer):
+            yield x
