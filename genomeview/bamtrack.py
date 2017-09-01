@@ -20,12 +20,14 @@ class SingleEndBAMTrack(IntervalTrack):
 
         self.quick_consensus = True
         self.draw_mismatches = True
-
+        self.include_secondary = True
+        
     def __iter__(self):
         c = 0
         for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
             c += 1
             if read.is_unmapped: continue
+            if read.is_secondary and not self.include_secondary: continue
             id_ = read.query_name 
             interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end)
             interval.read = read
@@ -51,6 +53,8 @@ class SingleEndBAMTrack(IntervalTrack):
             yield from self._draw_cigar(renderer, interval.read)
 
     def _draw_cigar(self, renderer, read):
+        if read.is_secondary: return
+        
         min_width = 2
         row = self.intervals_to_rows[read.query_name]
         yoffset = row*(self.row_height+self.margin_y)
