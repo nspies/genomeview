@@ -136,9 +136,21 @@ class Renderer:
         yield "<!-- {} -->".format(element.name)
         yield from self.backend.start_clipped_group(self.x, self.y, self.width, self.height, self.id)
         # yield self.backend.rect(self.x, self.y, self.width, self.height, fill="blue")
+        try:
+            for subelement in element.prerender(self):
+                yield "   " + subelement
+        except AttributeError:
+            pass
+        
         for subelement in element.render(self):
             yield "   " + subelement
-        
+
+        try:
+            for subelement in element.postrender(self):
+                yield "   " + subelement
+        except AttributeError:
+            pass
+
         yield from self.backend.stop_clipped_group()
         
     def subrenderer(self, x=0, y=0, width=None, height=None):
