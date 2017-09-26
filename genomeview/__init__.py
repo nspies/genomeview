@@ -1,3 +1,17 @@
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 from genomeview.genomeview import *
+from genomeview.genomesource import *
+# try:
+from genomeview._quickconsensus import *
+# except ImportError:
+#     import logging
+#     print("asdfasdfasdf")
+#     logging.warn("Unable to load cythonized quickconsensus module; drawing reads using quick consensus mode will be substantially slower")
+#     from genomeview.quickconsensus import *
+
+from genomeview.track import *
+from genomeview.bamtrack import *
+from genomeview.graphtrack import *
+from genomeview.intervaltrack import *
+
