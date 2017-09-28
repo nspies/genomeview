@@ -90,3 +90,6 @@ class IntervalTrack(Track):
     def render(self, renderer):
         for interval in self.intervals:
             yield from self.draw_interval(renderer, interval)
+            
+        for x in  self.render_label(renderer):
+            yield x

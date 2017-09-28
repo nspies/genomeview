@@ -40,9 +40,9 @@ class MismatchCounts(object):
             row = self.types_to_id[type_]
             self.counts[row,position] += 1
 
-    def counts(self, position):
-        position -= self.start
-        return self.counts[position,:]
+    # def counts(self, position):
+    #     position -= self.start
+    #     return self.counts[position,:]
 
     def query(self, type_, start, end=None):
         if start < self.start or start >= self.end:
