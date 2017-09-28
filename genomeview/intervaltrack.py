@@ -12,6 +12,18 @@ class Interval:
             strand = {True:"+", False:"-"}[strand]
         self.strand = strand
 
+    def overlaps(self, other, ignore_strand=True):
+        if self.chrom != other.chrom:
+            return False
+        if other.start > self.end or self.start > other.end:
+            return False
+        if not ignore_strand and self.strand != other.strand:
+            return False
+        return True
+
+    def __repr__(self):
+        return "{}:{:,}-{:,}{}".format(self.chrom, self.start, self.end, self.strand)
+        
 def color_by_strand(interval):
     # brightness = 0.2 + (cur_reads[0].mapq/40.0*0.8)
     color = "purple"
@@ -73,7 +85,7 @@ class IntervalTrack(Track):
             temp_label = "{}_{}".format(interval.id, 1 if interval.read.is_read1 else 2)
         yield from renderer.rect(start, top, end-start, self.row_height, fill=color, **{"stroke":"none", "id":temp_label})
         if interval.label is not None:
-            yield from renderer.text(end+self.label_distance, top+self.row_height, interval.label, anchor="start")
+            yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
         
     def render(self, renderer):
         for interval in self.intervals:
