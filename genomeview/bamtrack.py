@@ -39,7 +39,6 @@ class SingleEndBAMTrack(IntervalTrack):
             if self.draw_read_labels:
                 interval.label = read.query_name
             yield interval
-        print(c)
 
     def match_chrom_format(self, chrom):
         return match_chrom_format(chrom, self.bam.references)
