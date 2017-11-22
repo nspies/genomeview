@@ -15,9 +15,7 @@ class Track:
         
     def render_label(self, renderer):
         name = self.name
-        # if self.scale.pixel_width < 400:
-        #     name = name[:
-        yield from renderer.text_with_background(5, 14, name, anchor="start", size=18)
+        yield from renderer.text_with_background(5, 14, name, anchor="start", size=18, bg_opacity=0.9)
 
         
 class TrackLabel:

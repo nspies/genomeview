@@ -1,10 +1,14 @@
 import collections
 import pysam
 
+from genomeview.track import Track
 from genomeview.intervaltrack import Interval, IntervalTrack
 from genomeview import MismatchCounts
 from genomeview.utilities import match_chrom_format
 
+
+def allreads(read):
+    return True
 
 class SingleEndBAMTrack(IntervalTrack):
     def __init__(self, name, bam_path):
@@ -25,10 +29,19 @@ class SingleEndBAMTrack(IntervalTrack):
         
         self.draw_read_labels = False
 
+        self.include_read_fn = allreads
 
+    def fetch(self, include_read_fn=None):
+        for read in self.bam.fetch(self.match_chrom_format(self.scale.chrom), self.scale.start, self.scale.end):
+            if include_read_fn:
+                if include_read_fn(read):
+                    yield read
+            elif not self.include_read_fn or self.include_read_fn(read):
+                yield read
+        
     def __iter__(self):
         c = 0
-        for read in self.bam.fetch(self.match_chrom_format(self.scale.chrom), self.scale.start, self.scale.end):
+        for read in self.fetch():
             c += 1
             if read.is_unmapped: continue
             if read.is_secondary and not self.include_secondary: continue
@@ -151,7 +164,7 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
         chrom, start, end = self.scale.chrom, self.scale.start, self.scale.end
         cur_read_coords = collections.defaultdict(list)
 
-        for read in self.bam.fetch(self.match_chrom_format(chrom), start, end):
+        for read in self.fetch():
             if read.is_unmapped: continue
             cur_read_coords[read.query_name].append(
                 (read.reference_start, read.reference_end, read.next_reference_start, read.is_proper_pair))
@@ -218,10 +231,8 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
 
             
     def render(self, renderer):
-        # for chrom, start, end in self.scale.regions():
-
         read_buffer = {}
-        for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
+        for read in self.fetch():
             if read.is_unmapped: continue
             if read.query_name in read_buffer:
                 other_read = read_buffer.pop(read.query_name)
@@ -238,3 +249,68 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
         
         for x in  self.render_label(renderer):
             yield x
+
+
+
+def _get_filter_fn(keyfn, value):
+    def filter_fn(read):
+        return keyfn(read) == value
+    return filter_fn
+
+def category_label_fn(category):
+    """
+    a function for turning a category (eg the tag value) into nicely formatted
+    label text for display 
+    """
+    return str(category)
+
+def get_group_by_tag_fn(tag):
+    """
+    creates a grouping function based on the values of "tag", to be used by GroupedBAMTrack
+    for example, use tag="HP" with 10x genomics data to split the view into reads from 
+    haplotype 1, haplotype 2, and those missing haplotype information
+    """
+    def group_by_tag(read):
+        if not read.has_tag(tag):
+            return "missing"
+        return str(read.get_tag(tag))
+    return group_by_tag
+
+class GroupedBAMTrack(Track):
+    def __init__(self, name, bam_path, keyfn, bam_track_class):
+        super().__init__(name)
+        self.keyfn = keyfn
+        self.bam_track_class = bam_track_class
+        self.bam_path = bam_path
+        self.bam = pysam.AlignmentFile(bam_path)
+        self.subtracks = []
+        
+        self.space_between = 10
+        self.category_label_fn = category_label_fn
+        
+    def layout(self, scale):
+        self.scale = scale
+        
+        categories = set()
+        chrom = match_chrom_format(self.scale.chrom, self.bam.references)
+        
+        for read in self.bam.fetch(chrom, self.scale.start, self.scale.end):
+            category = self.keyfn(read)
+            categories.add(category)
+        
+        categories = sorted(categories)
+        self.height = 0
+        for category in categories:
+            cur_track = self.bam_track_class(self.category_label_fn(category), self.bam_path)
+            cur_track.include_read_fn = _get_filter_fn(self.keyfn, category)
+            cur_track.layout(scale)
+            self.height += cur_track.height + self.space_between
+            
+            self.subtracks.append(cur_track)
+            
+    def render(self, renderer):
+        cury = 0
+        for subtrack in self.subtracks:
+            subrenderer = renderer.subrenderer(y=cury, height=subtrack.height)
+            yield from subrenderer.render(subtrack)
+            cury += subtrack.height + self.space_between

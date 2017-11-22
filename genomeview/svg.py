@@ -21,13 +21,13 @@ class SVG(GraphicsBackend):
         yield """<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" font-family="{family}" text-anchor="{anchor}" {more}>{text}</text>""".format(
             x=x, y=y, size=size, family=family, anchor=anchor, more=_addOptions(kwdargs, defaults), text=text)
 
-    def text_with_background(self, x, y, text, size=10, anchor="middle", text_color="black", bg="white", **kwdargs):
+    def text_with_background(self, x, y, text, size=10, anchor="middle", text_color="black", bg="white", bg_opacity=0.8, **kwdargs):
         self._filter_id += 1
 
         text_filter = [
             """<defs>""",
             """    <filter x="0" y="0" width="1" height="1" id="solid{}">""".format(self._filter_id),
-            """        <feFlood flood-opacity="0.8" flood-color="{}"/>""".format(bg),
+            """        <feFlood flood-opacity="{}" flood-color="{}"/>""".format(bg_opacity, bg),
             """        <feComposite in="SourceGraphic"/>""",
             """    </filter>""",
             """</defs>"""]
@@ -136,20 +136,20 @@ class Renderer:
         yield "<!-- {} -->".format(element.name)
         yield from self.backend.start_clipped_group(self.x, self.y, self.width, self.height, self.id)
         # yield self.backend.rect(self.x, self.y, self.width, self.height, fill="blue")
-        try:
-            for subelement in element.prerender(self):
-                yield "   " + subelement
-        except AttributeError:
-            pass
+
+        if hasattr(element, "prerenderers"):
+            for prerenderer in element.prerenderers:
+                for subelement in prerenderer(self, element):
+                    yield "   " + subelement
+
         
         for subelement in element.render(self):
             yield "   " + subelement
 
-        try:
-            for subelement in element.postrender(self):
-                yield "   " + subelement
-        except AttributeError:
-            pass
+        if hasattr(element, "postrenderers"):
+            for postrenderer in element.postrenderers:
+                for subelement in postrenderer(self, element):
+                    yield "   " + subelement
 
         yield from self.backend.stop_clipped_group()
         
