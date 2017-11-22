@@ -3,6 +3,7 @@ import pysam
 
 from genomeview.intervaltrack import Interval, IntervalTrack
 from genomeview import MismatchCounts
+from genomeview.utilities import match_chrom_format
 
 
 class SingleEndBAMTrack(IntervalTrack):
@@ -27,7 +28,7 @@ class SingleEndBAMTrack(IntervalTrack):
 
     def __iter__(self):
         c = 0
-        for read in self.bam.fetch(self.scale.chrom, self.scale.start, self.scale.end):
+        for read in self.bam.fetch(self.match_chrom_format(self.scale.chrom), self.scale.start, self.scale.end):
             c += 1
             if read.is_unmapped: continue
             if read.is_secondary and not self.include_secondary: continue
@@ -40,6 +41,9 @@ class SingleEndBAMTrack(IntervalTrack):
             yield interval
         print(c)
 
+    def match_chrom_format(self, chrom):
+        return match_chrom_format(chrom, self.bam.references)
+        
     def layout(self, scale):
         super().layout(scale)
         self.reset_mismatch_counts()
@@ -148,7 +152,7 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
         chrom, start, end = self.scale.chrom, self.scale.start, self.scale.end
         cur_read_coords = collections.defaultdict(list)
 
-        for read in self.bam.fetch(chrom, start, end):
+        for read in self.bam.fetch(self.match_chrom_format(chrom), start, end):
             if read.is_unmapped: continue
             cur_read_coords[read.query_name].append(
                 (read.reference_start, read.reference_end, read.next_reference_start, read.is_proper_pair))

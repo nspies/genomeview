@@ -1,5 +1,7 @@
 import numpy
 
+from genomeview.utilities import match_chrom_format
+
 class MismatchCounts(object):
     """
     keeps track of how many of each nucleotide (or insertion/deletion) are present at each position
@@ -18,7 +20,7 @@ class MismatchCounts(object):
 
     def tally_reads(self, bam):
         depths = []
-        for pileupcolumn in bam.pileup(self.chrom, self.start, self.end, truncate=True):
+        for pileupcolumn in bam.pileup(match_chrom_format(self.chrom, bam.references), self.start, self.end, truncate=True):
             depths.append(pileupcolumn.n)
             for pileupread in pileupcolumn.pileups:
                 if pileupread.is_refskip:

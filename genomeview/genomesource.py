@@ -1,5 +1,6 @@
 import collections
 
+from genomeview.utilities import match_chrom_format
 
 comp = str.maketrans('ATCGNatcgn','TAGCNtagcn')
     
@@ -19,6 +20,7 @@ class GenomeSource(object):
         self.aligner_type = aligner_type
 
     def get_seq(self, chrom, start, end, strand):
+        chrom = match_chrom_format(chrom, self.keys())
         seq = self.names_to_contigs[chrom][start:end+1]
         if strand == "-":
             seq = reverse_comp(seq)
@@ -36,6 +38,8 @@ class FastaGenomeSource(GenomeSource):
         self._fasta = None
         
     def get_seq(self, chrom, start, end, strand):
+        chrom = match_chrom_format(chrom, self.keys())
+        
         seq = self.fasta[chrom][start:end+1]
         if strand == "-":
             seq = reverse_comp(seq)

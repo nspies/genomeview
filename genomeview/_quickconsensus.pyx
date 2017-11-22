@@ -9,6 +9,8 @@ from pysam.libcalignmentfile cimport BAM_FPROPER_PAIR, BAM_FPAIRED, BAM_FREVERSE
 from pysam.libcalignedsegment cimport PileupColumn, pysam_bam_get_seq
 from pysam.libchtslib cimport bam1_t, bam_pileup1_t
 
+from genomeview.utilities import match_chrom_format
+
 
 cdef char* bam_nt16_rev_table = "=ACMGRSVTWYHKDBN"
 
@@ -53,8 +55,10 @@ class MismatchCounts(object):
             bam1_t *read
             int c, n
 
+        chrom = match_chrom_format(self.chrom, bam.references)
+	
         # for pileupcolumn in bam.pileup(self.chrom, self.start, self.end, truncate=True):
-        pileup = bam.pileup(self.chrom, self.start, self.end, truncate=True)
+        pileup = bam.pileup(chrom, self.start, self.end, truncate=True)
         for column in pileup:
             # for pileupread in pileupcolumn.pileups:
             n = column.n
@@ -81,6 +85,8 @@ class MismatchCounts(object):
         if type_ == "INS":
             self.insertions[position] += 1
         else:
+            if type_ not in self.types_to_id:
+                return
             row = self.types_to_id[type_]
             self.counts[row,position] += 1
 
