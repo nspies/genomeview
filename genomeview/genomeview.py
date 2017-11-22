@@ -47,6 +47,8 @@ class ViewRow:
 
         self.width = None
         self.height = None
+
+        self.space_between = 5
     
     def add_view(self, view):
         assert view.name not in self.views
@@ -54,7 +56,8 @@ class ViewRow:
         
     def layout(self, width):
         self.width = width
-        self.each_width = self.width / len(self.views)
+        n_views = len(self.views)
+        self.each_width = (self.width - self.space_between*(n_views-1)) / n_views
 
         self.height = 0
         for name, view in self.views.items():
@@ -66,7 +69,7 @@ class ViewRow:
         for name, view in self.views.items():
             subrenderer = renderer.subrenderer(x=curx, width=self.each_width, height=view.height)
             yield from subrenderer.render(view)
-            curx += self.each_width
+            curx += self.each_width + self.space_between
         
 
 class GenomeView:
