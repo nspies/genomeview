@@ -11,7 +11,36 @@ def allreads(read):
     return True
 
 class SingleEndBAMTrack(IntervalTrack):
+    """
+    Displays bam as single-ended reads
+    
+    Attributes:
+        nuc_colors (dict): defines the SVG colors used to display mismatched nucleotides
+        insertion_color, deletion_color, clipping_color (str): SVG colors for insertions, 
+             deletions and soft/hard clipping
+
+        quick_consensus: specify whether the quick consensus mode should be used. When activated, 
+            mismatches wrt the reference genome are only shown when at least several reads support
+            a variant at that position (useful when displaying high-error rate data types eg 
+            pacbio). Only relevant if draw_mismatches is also True. (default: True)
+        draw_mismatches: whether to show mismatches with respect to the reference genome.
+            (default: True).
+
+        include_secondary: whether to draw alignments specified as "secondary" in the BAM flags 
+            (default: True).
+        
+        include_read_fn: callback function used to specify which reads should be included in 
+            the display. The function takes as its only argument a read (pysam.AlignedSegment) 
+            and returns True (yes, display the read) or False (no, don't display). If this 
+            function is not specified, by default all reads are shown.
+    """
     def __init__(self, name, bam_path):
+        """
+        Args:
+            name (str): name of the track
+            bam_path (str): path of the bam file to display
+
+        """
         super().__init__(name, [])
         
         self.bam = pysam.AlignmentFile(bam_path)
@@ -32,11 +61,14 @@ class SingleEndBAMTrack(IntervalTrack):
         self.include_read_fn = allreads
 
     def fetch(self, include_read_fn=None):
-        for read in self.bam.fetch(self.match_chrom_format(self.scale.chrom), self.scale.start, self.scale.end):
-            if include_read_fn:
-                if include_read_fn(read):
-                    yield read
-            elif not self.include_read_fn or self.include_read_fn(read):
+        """
+        iterator over reads from the bam file
+        """
+        chrom = self.match_chrom_format(self.scale.chrom)
+        start, end = self.scale.start, self.scale.end
+        
+        for read in self.bam.fetch(chrom, start, end):
+            if not self.include_read_fn or self.include_read_fn(read):
                 yield read
         
     def __iter__(self):
@@ -54,6 +86,10 @@ class SingleEndBAMTrack(IntervalTrack):
             yield interval
 
     def match_chrom_format(self, chrom):
+        """
+        Ensures that the input argument `chrom` matches the chromosome name formatting in
+        the bam file being visualized (eg "chr14" vs "14").
+        """
         return match_chrom_format(chrom, self.bam.references)
         
     def layout(self, scale):
@@ -62,7 +98,8 @@ class SingleEndBAMTrack(IntervalTrack):
 
     def reset_mismatch_counts(self):
         if self.quick_consensus and self.draw_mismatches:
-            self.mismatch_counts = MismatchCounts(self.scale.chrom, self.scale.start, self.scale.end)
+            self.mismatch_counts = MismatchCounts(
+                self.scale.chrom, self.scale.start, self.scale.end)
             self.mismatch_counts.tally_reads(self.bam)
 
     def layout_interval(self, interval):
@@ -75,6 +112,9 @@ class SingleEndBAMTrack(IntervalTrack):
             yield from self._draw_cigar(renderer, interval.read)
 
     def _draw_cigar(self, renderer, read):
+        """
+        draw mismatches/insertions/deletions and clipping
+        """
         if read.is_secondary: return
         
         min_width = 2
@@ -257,13 +297,6 @@ def _get_filter_fn(keyfn, value):
         return keyfn(read) == value
     return filter_fn
 
-def category_label_fn(category):
-    """
-    a function for turning a category (eg the tag value) into nicely formatted
-    label text for display 
-    """
-    return str(category)
-
 def get_group_by_tag_fn(tag):
     """
     creates a grouping function based on the values of "tag", to be used by GroupedBAMTrack
@@ -277,7 +310,24 @@ def get_group_by_tag_fn(tag):
     return group_by_tag
 
 class GroupedBAMTrack(Track):
+    """
+    Displays reads from a BAM, separated out into groups based on a feature of the reads. 
+    For example, group reads based on the value of tag.
+
+    Attributes:
+        keyfn: the function used to specify the groupings of reads. Takes as input a read 
+            (pysam.AlignedSegment) and returns a string or integer specifying the group.
+        bam_track_class: the class used to display each group of reads, should probably be
+            either :class:`genomeview.bamtrack.PairedEndBAMTrack` or 
+            :class:`genomeview.bamtrack.SingleEndBAMTrack`
+
+        space_between (float): the amount of space (pixels) between groups. (Default: 10)
+        category_label_fn: a function that nicely formats the category labels. Takes as argument
+            the result of the keyfn and should return a string. (Default: render as string)
+    """
     def __init__(self, name, bam_path, keyfn, bam_track_class):
+        """
+        """
         super().__init__(name)
         self.keyfn = keyfn
         self.bam_track_class = bam_track_class
@@ -286,7 +336,7 @@ class GroupedBAMTrack(Track):
         self.subtracks = []
         
         self.space_between = 10
-        self.category_label_fn = category_label_fn
+        self.category_label_fn = str
         
     def layout(self, scale):
         self.scale = scale

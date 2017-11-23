@@ -1,3 +1,9 @@
+"""
+Genome Sources are used to describe reference genomes, typically either on disk (eg
+:class:`genomeview.genomesource.FastaGenomeSource`) or in memory 
+(:class:`genomeview.genomesource.GenomeSource`).
+"""
+
 import collections
 
 from genomeview.utilities import match_chrom_format
@@ -11,6 +17,13 @@ def reverse_comp(st):
 
 
 class GenomeSource(object):
+    """
+    An in-memory genome source.
+
+    Attributes:
+        names_to_contigs: a `collections.OrderedDict` or similar ordered mapping specifying 
+            the contig/chromosome names as keys and their sequences as values.
+    """
     def __init__(self, names_to_contigs, aligner_type="bwa"):
         self.names_to_contigs = collections.OrderedDict(names_to_contigs)
         self._bwa = None
@@ -32,7 +45,11 @@ class GenomeSource(object):
 
 
 class FastaGenomeSource(GenomeSource):
-    """ pickle-able wrapper for pyfaidx.Fasta """
+    """ 
+    A genome source based on a Fasta file. 
+
+    This is essentially a pickle-able wrapper for pyfaidx.Fasta
+    """
     def __init__(self, path):
         self.path = path
         self._fasta = None
