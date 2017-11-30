@@ -51,7 +51,7 @@ class SVG(GraphicsBackend):
             x=x, y=y, w=width, h=height, more=_addOptions(kwdargs, defaults))
         yield tag
 
-    def line(self, x1, y1, x2, y2, arrowhead=None, **kwdargs):
+    def line(self, x1, y1, x2, y2, **kwdargs):
         defaults = {"stroke":"black"}
         yield """<line x1="{x1:.2f}" x2="{x2:.2f}" y1="{y1:.2f}" y2="{y2:.2f}" {more} />""".format(
             x1=x1, x2=x2,  y1=y1, y2=y2, more=_addOptions(kwdargs, defaults))

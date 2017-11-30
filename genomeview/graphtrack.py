@@ -59,7 +59,8 @@ class GraphTrack(Track):
                 y1 = self.ytopixels(series.y[i])
                 y2 = self.ytopixels(series.y[i+1])
                                          
-                yield from renderer.line(x1, y1, x2, y2, **{"stroke-width":1, "stroke":series.color})
+                yield from renderer.line(x1, y1, x2, y2, 
+                    **{"stroke-width":1, "stroke":series.color, "stroke-linecap":"square"})
 
         # since the labels are drawn at the top of the ticks, let's make sure the top tick/label is 
         # more than 12 pixels from the top of the track so it doesn't get clipped
@@ -67,9 +68,11 @@ class GraphTrack(Track):
         axis_max_y = self.min_y + (self.max_y - self.min_y) * (1-7/self.height)
         ticks = get_ticks(self.min_y, axis_max_y, 4)
 
-        yield from renderer.line(1, self.ytopixels(ticks[0][0]), 1, self.ytopixels(ticks[-1][0]), **{"stroke-width":2, "stroke":"gray"})
+        yield from renderer.line(1, self.ytopixels(ticks[0][0]), 1, self.ytopixels(ticks[-1][0]), 
+                                 **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
         for tick, label in ticks:
             y = self.ytopixels(tick)
-            yield from renderer.line(1, y, 10, y, **{"stroke-width":2, "stroke":"gray"})
+            yield from renderer.line(1, y, 10, y, 
+                                     **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
             yield from renderer.text(14, y, label, anchor="start", fill="gray")
             
