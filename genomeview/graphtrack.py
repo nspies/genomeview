@@ -15,8 +15,7 @@ class Series:
         
 class GraphTrack(Track):
     def __init__(self, name="graph", x=None, y=None):
-        super().__init__()
-        self.name = name
+        super().__init__(name)
 
         self.series = collections.OrderedDict()
         

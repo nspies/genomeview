@@ -10,6 +10,19 @@ from genomeview.utilities import match_chrom_format
 def allreads(read):
     return True
 
+def color_by_strand(interval):
+    # brightness = 0.2 + (cur_reads[0].mapq/40.0*0.8)
+
+    if interval.strand == "-":
+        color = "red"
+        if interval.read.is_secondary:
+            color = "pink"
+    else:
+        color = "purple"
+        if interval.read.is_secondary:
+            color = "blue"
+    return color
+    
 class SingleEndBAMTrack(IntervalTrack):
     """
     Displays bam as single-ended reads
@@ -59,7 +72,8 @@ class SingleEndBAMTrack(IntervalTrack):
         self.draw_read_labels = False
 
         self.include_read_fn = allreads
-
+        self.color_fn = color_by_strand
+        
     def fetch(self, include_read_fn=None):
         """
         iterator over reads from the bam file

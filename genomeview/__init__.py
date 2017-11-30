@@ -10,6 +10,7 @@ from genomeview._quickconsensus import *
 #     logging.warn("Unable to load cythonized quickconsensus module; drawing reads using quick consensus mode will be substantially slower")
 #     from genomeview.quickconsensus import *
 
+from genomeview.axis import *
 from genomeview.track import *
 from genomeview.bamtrack import *
 from genomeview.graphtrack import *
