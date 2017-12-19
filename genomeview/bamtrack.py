@@ -72,7 +72,7 @@ class SingleEndBAMTrack(IntervalTrack):
         self.draw_read_labels = False
 
         self.include_read_fn = allreads
-        self.color_fn = color_by_strand
+        # self.color_fn = color_by_strand
         
     def fetch(self, include_read_fn=None):
         """

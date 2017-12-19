@@ -65,7 +65,9 @@ author = 'Noah Spies'
 # built documents.
 #
 # The short X.Y version.
-version = ''
+import genomeview
+version = genomeview.__version__
+
 # The full version, including alpha/beta/rc tags.
 release = ''
 

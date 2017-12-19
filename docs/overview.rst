@@ -1,8 +1,8 @@
-Creating a genome view
-======================
+GenomeView Tutorial
+===================
 .. contents:: :local:
 
-
+GenomeView is a python-based system for visualizing genomic data.
 
 Step 1: creating the document
 -----------------------------

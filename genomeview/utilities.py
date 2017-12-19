@@ -16,4 +16,4 @@ def render_to_file(doc, outf):
     Renders the document to a file-like object.
     """
     for l in doc.render():
-        outf.write(l)
+        outf.write(l + "\n")
