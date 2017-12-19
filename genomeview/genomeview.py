@@ -18,6 +18,9 @@ class Document:
 
         self.between_views = 5
 
+    def add_view(self, view):
+        self.elements.append(view)
+        
     def layout(self):
         self.view_width = self.width - self.margin_x*2
         for element in self.elements:

@@ -203,6 +203,12 @@ class SingleEndBAMTrack(IntervalTrack):
 
 
 class PairedEndBAMTrack(SingleEndBAMTrack):
+    """
+    Displays paired-end reads together (otherwise, same as :py:class:`genomeview.SingleEndBAMTrack`).
+
+    Attributes:
+        overlap_color: color used to highlight portions of read pairs that are overlapping one another
+    """
     def __init__(self, name, bam_path):
         super().__init__(name, bam_path)
 
