@@ -36,8 +36,13 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary'
-    ]
+    'sphinx.ext.autosummary',     
+    'sphinx.ext.intersphinx',
+]
+# Add mappings
+intersphinx_mapping = {
+    'pysam': ('http://pysam.readthedocs.io/en/latest/', None)
+}
 
 napoleon_google_docstring = True
 napoleon_use_param = False

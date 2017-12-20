@@ -1,10 +1,13 @@
 import genomeview
 
 def test_basic(reference_path):
-    doc = genomeview.Document(900)
     source = genomeview.FastaGenomeSource(reference_path)
+
+    doc = genomeview.Document(900)
+    
     view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+1000, "+", source)
     doc.add_view(view)
+
     bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "quick_consensus_test.bam")
     view.add_track(bam_track_hg002)
 

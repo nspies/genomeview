@@ -1,8 +1,10 @@
 GenomeView Tutorial
 ===================
+
+GenomeView is a python-based system for visualizing genomic data. This tutorial walks through visualizing a simple 
+
 .. contents:: :local:
 
-GenomeView is a python-based system for visualizing genomic data.
 
 Step 1: creating the document
 -----------------------------
@@ -57,3 +59,7 @@ To render the document to file, use the simple ``render_to_file`` command::
         genomeview.render_to_file(doc, out_svg_file)
 
 The resulting SVG file can be visualized in any modern web browser or edited in most standard vector-graphics editing programs (eg Adobe Illustrator, Affinity Designer, Inkscape).
+
+For example, visualizing a 1kb window of a PacBio dataset:
+
+.. image:: images/output.svg

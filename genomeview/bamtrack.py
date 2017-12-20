@@ -336,7 +336,7 @@ class GroupedBAMTrack(Track):
 
     Attributes:
         keyfn: the function used to specify the groupings of reads. Takes as input a read 
-            (pysam.AlignedSegment) and returns a string or integer specifying the group.
+            (:py:class:`pysam.AlignedSegment`).
         bam_track_class: the class used to display each group of reads, should probably be
             either :class:`genomeview.bamtrack.PairedEndBAMTrack` or 
             :class:`genomeview.bamtrack.SingleEndBAMTrack`

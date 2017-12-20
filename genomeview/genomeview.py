@@ -110,6 +110,14 @@ class GenomeView:
     
     
 class Scale(object):
+    """
+    Maintains information about a projection of a specific genomic
+    interval into screen coordinates.
+
+    That is, we're interested in visualizing an interval (chrom:start-end) 
+    on a canvas of a specified pixel width. The scale enables converting
+    genomic coordinates into the display coordinates.
+    """
     def __init__(self, chrom, start, end, strand, source):
         self.chrom = chrom
         self.start = start
@@ -130,19 +138,31 @@ class Scale(object):
         nt_width = self.end - self.start
         self.bases_per_pixel = nt_width / self.pixel_width
 
-    def topixels(self, g):
+    def topixels(self, genomic_position):
+        """
+        Converts a genomic position to a pixel location in the current
+        coordinate system.
+        """
         self._setup()
 
-        pos = (g - self.start) / float(self.bases_per_pixel)
+        pos = (genomic_position - self.start) / float(self.bases_per_pixel)
         return pos
 
-    def relpixels(self, g):
+    def relpixels(self, genomic_size):
+        """
+        Takes a genomic length (ie, a number of basepairs) and converts
+        it to a relative screen length in pixels.
+        """
         self._setup()
 
-        dist = g / float(self.bases_per_pixel)
+        dist = genomic_size / float(self.bases_per_pixel)
         return dist
     
     def get_seq(self, start=None, end=None, strand="+"):
+        """
+        Gets the nucleotide sequence of an interval. By default, returns the 
+        sequence for the current genomic interval.
+        """
         self._setup()
 
         if start is None:
