@@ -65,6 +65,20 @@ project = 'genomeview'
 copyright = '2017, Noah Spies'
 author = 'Noah Spies'
 
+
+
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MagicMock()
+
+MOCK_MODULES = ['numpy']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
@@ -184,14 +198,3 @@ texinfo_documents = [
 
 
 
-
-import sys
-from unittest.mock import MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return MagicMock()
-
-MOCK_MODULES = ['numpy']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
