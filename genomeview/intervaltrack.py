@@ -61,12 +61,16 @@ class IntervalTrack(Track):
             new_end += len(interval.label) * self.row_height * 0.75
         self.rows[row] = new_end
 
+        assert not interval.id in self.intervals_to_rows
         self.intervals_to_rows[interval.id] = row
         
 
     def layout(self, scale):
         super().layout(scale)
-        
+
+        self.rows = []
+        self.intervals_to_rows = {}
+
         for interval in self.intervals:
             self.layout_interval(interval)
             

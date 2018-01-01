@@ -87,11 +87,11 @@ class SingleEndBAMTrack(IntervalTrack):
         
     def __iter__(self):
         c = 0
-        for read in self.fetch():
+        for i, read in enumerate(self.fetch()):
             c += 1
             if read.is_unmapped: continue
             if read.is_secondary and not self.include_secondary: continue
-            id_ = read.query_name 
+            id_ = read.query_name + str(i)
             interval = Interval(id_, self.scale.chrom, read.reference_start, read.reference_end, 
                                 not read.is_reverse)
             interval.read = read
@@ -123,16 +123,18 @@ class SingleEndBAMTrack(IntervalTrack):
         yield from super().draw_interval(renderer, interval)
 
         if self.draw_mismatches:
-            yield from self._draw_cigar(renderer, interval.read)
+            yield from self._draw_cigar(renderer, interval)
 
-    def _draw_cigar(self, renderer, read):
+    def _draw_cigar(self, renderer, interval):
         """
         draw mismatches/insertions/deletions and clipping
         """
+        read = interval.read
         if read.is_secondary: return
         
         min_width = 2
-        row = self.intervals_to_rows[read.query_name]
+
+        row = self.intervals_to_rows[interval.id]
         yoffset = row*(self.row_height+self.margin_y)
 
         genome_position = read.reference_start
