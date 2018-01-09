@@ -61,13 +61,14 @@ class SingleEndBAMTrack(IntervalTrack):
         self.mismatch_counts = None
         
         self.nuc_colors = {"A":"blue", "C":"orange", "G":"green", "T":"black", "N":"gray"}
-        self.insertion_color = "cyan"
+        self.insertion_color = "purple"
         self.clipping_color = "cyan"
-        self.deletion_color = "gray"
+        self.deletion_color = "cyan"
 
         self.quick_consensus = True
         self.draw_mismatches = True
         self.include_secondary = True
+        self.min_indel_size = 0
         
         self.draw_read_labels = False
 
@@ -168,23 +169,40 @@ class SingleEndBAMTrack(IntervalTrack):
                 sequence_position += length
                 genome_position += length
             elif code == 2: #in "D":
-                if not self.mismatch_counts or self.mismatch_counts.query("DEL", genome_position, genome_position+length+1):
+                # if not self.mismatch_counts or self.mismatch_counts.query("DEL", genome_position, genome_position+length+1):
+                if length > self.min_indel_size:
                     curstart = self.scale.topixels(genome_position)
                     curend = self.scale.topixels(genome_position+length+1)
-                    yield from renderer.rect(curstart, yoffset, curend-curstart, self.row_height, fill=self.deletion_color, 
+
+                    width = max(curend-curstart, min_width*2)
+                    midpoint = (curstart+curend)/2
+                    ymid = yoffset+self.row_height/2
+
+                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill="white", 
                                              **extras)
+                    yield from renderer.line(midpoint-width/2, ymid, midpoint+width/2, ymid, 
+                                             stroke="black", **{"stroke-width":1})
+
 
                 genome_position += length
             elif code == 1: # I
-                if not self.mismatch_counts or self.mismatch_counts.query("INS", genome_position-2, genome_position+2):
+                # if not self.mismatch_counts or self.mismatch_counts.query("INS", genome_position-2, genome_position+2):
+                if length > self.min_indel_size:
                     curstart = self.scale.topixels(genome_position-0.5)
                     curend = self.scale.topixels(genome_position+0.5)
 
-                    width = max(curend-curstart, min_width)
                     midpoint = (curstart+curend)/2
 
-                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.insertion_color,
-                                             **extras)
+                    stroke_width = 1
+                    yield from renderer.line(
+                       midpoint-2, yoffset+1, midpoint+2, yoffset+1, stroke=self.insertion_color, **{"stroke-width":stroke_width})
+                    yield from renderer.line(
+                       midpoint, yoffset, midpoint, yoffset+self.row_height, 
+                       stroke=self.insertion_color, **{"stroke-width":stroke_width})
+                    yield from renderer.line(
+                       midpoint-2, yoffset+self.row_height-1, midpoint+2, yoffset+self.row_height-1, 
+                       stroke=self.insertion_color, **{"stroke-width":stroke_width})
+
                 sequence_position += length
             elif code in [4, 5]: #"HS":
                 if length >= 5:

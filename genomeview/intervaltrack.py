@@ -26,9 +26,9 @@ class Interval:
         
 def color_by_strand(interval):
     # brightness = 0.2 + (cur_reads[0].mapq/40.0*0.8)
-    color = "lightsteelblue"
+    color = "#8C8FCE"
     if interval.strand == "-":
-        color = "lightpink"
+        color = "#E89E9D"
     return color
     
 class IntervalTrack(Track):
