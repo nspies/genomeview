@@ -130,14 +130,15 @@ class Scale(object):
         self.source = source
         self._seq = None
 
+        if self.start >= self.end:
+            raise ValueError("End coordinate must be greater than start coordinate; you specified {}:{}-{}".format(chrom, start, end))
+
     def _setup(self):
         if self._param == self.pixel_width: return
         self._param = self.pixel_width
         self._seq = None
 
         nt_width = self.end - self.start
-        if nt_width <= 0:
-            raise ValueError("End coordinate must be greater than start coordinate; you specified {}:{}-{}".format(chrom, start, end))
         
         self.bases_per_pixel = nt_width / self.pixel_width
 
