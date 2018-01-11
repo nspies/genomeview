@@ -136,6 +136,9 @@ class Scale(object):
         self._seq = None
 
         nt_width = self.end - self.start
+        if nt_width <= 0:
+            raise ValueError("End coordinate must be greater than start coordinate; you specified {}:{}-{}".format(chrom, start, end))
+        
         self.bases_per_pixel = nt_width / self.pixel_width
 
     def topixels(self, genomic_position):
