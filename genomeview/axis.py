@@ -48,8 +48,9 @@ def get_ticks(start, end, target_n_labels=10):
         res /= 2.0
 
     roundStart = start - (start%res)
-
-    for i in range(int(roundStart), end, int(res)):
+    res = max(1, int(res))
+    
+    for i in range(int(roundStart), end, res):
         res_digits = math.log10(res)
         if res_digits >= 6:
             label = "{}mb".format(i / 1e6)
