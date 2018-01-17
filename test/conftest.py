@@ -18,3 +18,21 @@ def reference_path():
             outf.write(data)
 
     return reference_path
+
+@pytest.fixture
+def bam_doc():
+    import genomeview
+    source = genomeview.FastaGenomeSource(reference_path())
+
+    doc = genomeview.Document(900)
+    
+    view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+1000, "+", source)
+    doc.add_view(view)
+
+    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "quick_consensus_test.bam")
+    view.add_track(bam_track_hg002)
+
+    axis_track = genomeview.Axis("axis")
+    view.add_track(axis_track)
+
+    return doc
