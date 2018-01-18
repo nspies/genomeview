@@ -1,65 +1,42 @@
+.. _tutorial:
+
 GenomeView Tutorial
 ===================
 
-GenomeView is a python-based system for visualizing genomic data. This tutorial walks through visualizing a simple 
-
-.. contents:: :local:
+GenomeView is a python-based system for visualizing genomic data. This tutorial walks through visualizing reads in a set of BAM files.
 
 
-Step 1: creating the document
------------------------------
 
-First we'll need a document. The only argument is to define the width of the view (think of this as its pixel width)::
+Step 1: creating a document
+---------------------------
+
+To visualize a set of BAM files, the :py:function:`genomeview.visualize_data()` convenience function can be used::
+
+    dataset_paths = ["/path/to/pacbio_single_end_dataset.bam",
+                     "/path/to/illumina_paired_end_dataset.bam"]
+    reference = "/path/to/reference.fa"
     
-    doc = genomeview.Document(900)
+    chrom = "chr1"
+    start = 224932967
+    end = start + 10000
 
-The document is where all the genome views will end up.
+    doc = genomeview.visualize_data(dataset_paths, reference, chrom, start, end)
 
+The resulting document then includes a track for the PacBio dataset, a second track for the paired-ended Illumina dataset and an axis showing the location of the genomic coordinates in the window.
 
-Step 2: creating the genome views
----------------------------------
-
-We're starting to get into the action here -- a genome view defines a set of coordinates to visualize, and allows the addition of a number of tracks displaying different types of data for those coordinates.
-
-To create a genome view, you'll first create a genome "source" (basically a link to the reference genome sequence), then derive a view with the coordinates you'd like to visualize::
-    
-    source = genomeview.FastaGenomeSource("/path/to/hg19.fasta")
-    view = genomeview.GenomeView("locus 1", "chr1", 219158937, 219169063, "+", source)
-    doc.add_view(view)
-
-Note that all views and tracks take as their first argument a label which must be unique within the containing document or view.
-
-You can add as many genome views as you'd like to a single document, allowing you to visualize multiple genomic loci in the same document.
+The document includes a view that will visualze reads in the specified region chrom:start-end. For more details on setting up your own document with fine-grained control over how the tracks are created and visualized, see the :ref:`next section <details>`.
 
 
-Step 3: adding the tracks to the genome view
---------------------------------------------
-
-The next step is to create tracks visualizing the actual data and add them to the genome view. Tracks are visualized in the order that they're added, so if you'd like to put the axis at the top, add it first, and if you'd like it at the bottom, add it last.
-
-For example::
-
-    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "/path/to/hg002.sorted.bam")
-    view.add_track(bam_track_hg002)
-
-    axis_track = genomeview.Axis("axis")
-    view.add_track(axis_track)
-
-
-Step 4: rendering the document
+Step 2: rendering the document
 ------------------------------
 
 Documents are rendered into SVG format, a standard text-based format used to display graphical objects on the web.
 
 If you are using jupyter notebook or jupyterlab, documents can be displayed simply by placing the name of the document on the last line of a cell by itself and running the cell.
 
-To render the document to file, use the simple :py:function:`genomeview.save()` command::
+To render the document to file, use the simple :py:func:`genomeview.save()` command::
 
     genomeview.save(doc, "/path/to/output.svg")
-
-The resulting SVG file can be visualized in any modern web browser or edited in most standard vector-graphics editing programs (eg Adobe Illustrator, Affinity Designer, Inkscape).
-
-``save()`` can also create PDF or PNG files, by changing the file suffix to ".pdf"/".png".  This conversion requires the installation of `inkscape <https://inkscape.org/>`_, `libRsvg <https://wiki.gnome.org/action/show/Projects/LibRsvg>`_ or `webkitToPDF <https://github.com/nspies/webkitToPDF>`_ are installed.
 
 For example, visualizing a 1kb window of a PacBio dataset:
 

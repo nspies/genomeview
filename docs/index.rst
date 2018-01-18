@@ -6,6 +6,7 @@ Welcome to genomeview's documentation!
    :caption: Contents:
 
    overview
+   details
    axis
    bams
    rendering

@@ -19,3 +19,5 @@ from genomeview.graphtrack import *
 from genomeview.intervaltrack import *
 
 from genomeview.export import render_to_file, save
+
+from genomeview.convenience import visualize_data
