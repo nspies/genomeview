@@ -53,12 +53,13 @@ Documents are rendered into SVG format, a standard text-based format used to dis
 
 If you are using jupyter notebook or jupyterlab, documents can be displayed simply by placing the name of the document on the last line of a cell by itself and running the cell.
 
-To render the document to file, use the simple ``render_to_file`` command::
+To render the document to file, use the simple :py:function:`genomeview.save()` command::
 
-    with open("/path/to/output.svg", "w") as out_svg_file:
-        genomeview.render_to_file(doc, out_svg_file)
+    genomeview.save(doc, "/path/to/output.svg")
 
 The resulting SVG file can be visualized in any modern web browser or edited in most standard vector-graphics editing programs (eg Adobe Illustrator, Affinity Designer, Inkscape).
+
+``save()`` can also create PDF or PNG files, by changing the file suffix to ".pdf"/".png".  This conversion requires the installation of `inkscape <https://inkscape.org/>`_, `libRsvg <https://wiki.gnome.org/action/show/Projects/LibRsvg>`_ or `webkitToPDF <https://github.com/nspies/webkitToPDF>`_ are installed.
 
 For example, visualizing a 1kb window of a PacBio dataset:
 

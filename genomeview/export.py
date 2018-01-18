@@ -1,8 +1,65 @@
 import logging
+import os
 import subprocess
 import sys
+import tempfile
 
 
+def save(doc, outpath, outformat=None):
+    """
+    Saves document `doc` to a file at `outpath`. By default, this file 
+    will be in SVG format; if it ends with .pdf or .png, or if outformat
+    is specified, the document will be converted to PDF or PNG if possible.
+
+    Conversion to PDF and PNG require rsvg-convert (provided by librsvg), 
+    inkscape or webkitToPDF (PDF conversion only).
+
+    Attributes:
+        doc: the :py:class:`genomeview.Document` to be saved
+        outpath: a string specifying the file to save to; file extensions of
+            .pdf or .png will change the default output format
+        outformat: override the file format; must be one of "pdf", "png", or
+            (the default) "svg"
+    """
+    if isinstance(outpath, bytes):
+        outpath = outpath.decode()
+
+    if outformat is None:
+        if outpath.endswith(".pdf"):
+            outformat = "pdf"
+        elif outpath.endswith(".png"):
+            outformat = "png"
+
+    if outformat == "svg":
+        with open(outpath, "w") as outf:
+            render_to_file(doc, outf)
+    else:
+        # render to a temporary file then convert to PDF or PNG
+        with tempfile.TemporaryDirectory() as outdir:
+            temp_svg_path = os.path.join(outdir, "temp.svg")
+            with open(temp_svg_path, "w") as outf:
+                render_to_file(doc, outf)
+
+            convert_svg(temp_svg_path, outpath, outformat)
+
+
+
+def render_to_file(doc, outf):
+    """
+    Renders the document as an svg to a file-like object.
+    """
+
+    for l in doc.render():
+        outf.write(l + "\n")
+
+
+
+
+#############################################################################
+######################### low-level functionality ###########################
+#############################################################################
+
+        
 
 def convert_svg(inpath, outpath, outformat):
     converter = _getExportConverter(outformat)

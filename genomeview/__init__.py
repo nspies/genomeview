@@ -18,4 +18,4 @@ from genomeview.bamtrack import *
 from genomeview.graphtrack import *
 from genomeview.intervaltrack import *
 
-from genomeview.utilities import render_to_file, save
+from genomeview.export import render_to_file, save
