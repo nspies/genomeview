@@ -1,11 +1,11 @@
-Welcome to genomeview's documentation!
-======================================
+GenomeView Overview
+===================
 
 .. toctree::
    :maxdepth: -1
    :caption: Contents:
 
-   overview
+   quickstart
    details
    axis
    bams
