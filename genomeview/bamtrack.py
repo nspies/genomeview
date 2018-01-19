@@ -75,7 +75,7 @@ class SingleEndBAMTrack(IntervalTrack):
         self.include_read_fn = allreads
         # self.color_fn = color_by_strand
         
-    def fetch(self, include_read_fn=None):
+    def fetch(self):
         """
         iterator over reads from the bam file
         """

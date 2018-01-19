@@ -15,6 +15,7 @@ except ImportError:
 from genomeview.axis import *
 from genomeview.track import *
 from genomeview.bamtrack import *
+from genomeview.bedtrack import BEDTrack
 from genomeview.graphtrack import *
 from genomeview.intervaltrack import *
 

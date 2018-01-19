@@ -25,10 +25,12 @@ def save(doc, outpath, outformat=None):
         outpath = outpath.decode()
 
     if outformat is None:
-        if outpath.endswith(".pdf"):
+        if outpath.lower().endswith(".pdf"):
             outformat = "pdf"
-        elif outpath.endswith(".png"):
+        elif outpath.lower().endswith(".png"):
             outformat = "png"
+        else:
+            outformat = "svg"
 
     if outformat == "svg":
         with open(outpath, "w") as outf:
