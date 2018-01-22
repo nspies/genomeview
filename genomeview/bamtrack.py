@@ -69,6 +69,8 @@ class SingleEndBAMTrack(IntervalTrack):
         self.draw_mismatches = True
         self.include_secondary = True
         self.min_indel_size = 0
+
+        self.min_cigar_size = 2
         
         self.draw_read_labels = False
 
@@ -126,6 +128,75 @@ class SingleEndBAMTrack(IntervalTrack):
         if self.draw_mismatches:
             yield from self._draw_cigar(renderer, interval)
 
+    def _draw_mismatch(self, renderer, length, genome_position, sequence_position, yoffset, alnseq):
+        extras = {"stroke":"none"}
+
+        for i in range(length):
+            if genome_position+i < self.scale.start: continue
+            if genome_position+i >= self.scale.end: break
+
+            alt = alnseq[sequence_position+i]
+            ref = self.scale.get_seq(genome_position+i, genome_position+i+1)
+
+            if alt != ref:
+                curstart = self.scale.topixels(genome_position+i)
+                curend = self.scale.topixels(genome_position+i+1)
+
+                color = self.nuc_colors[alnseq[sequence_position+i]]
+
+                if not self.mismatch_counts or alt=="N" or self.mismatch_counts.query(alt, genome_position+i):
+                    width = max(curend-curstart, self.min_cigar_size)
+                    midpoint = (curstart+curend)/2
+                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=color, 
+                                             **extras)
+
+    def _draw_deletion(self, renderer, length, genome_position, yoffset):
+        extras = {"stroke":"none"}
+
+        if length > self.min_indel_size:
+            curstart = self.scale.topixels(genome_position)
+            curend = self.scale.topixels(genome_position+length+1)
+
+            width = max(curend-curstart, self.min_cigar_size*2)
+            midpoint = (curstart+curend)/2
+            ymid = yoffset+self.row_height/2
+
+            yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill="white", 
+                                     **extras)
+            yield from renderer.line(midpoint-width/2, ymid, midpoint+width/2, ymid, 
+                                     stroke="black", **{"stroke-width":1})
+
+    def _draw_insertion(self, renderer, length, genome_position, yoffset):
+        if length > self.min_indel_size:
+            curstart = self.scale.topixels(genome_position-0.5)
+            curend = self.scale.topixels(genome_position+0.5)
+
+            midpoint = (curstart+curend)/2
+
+            stroke_width = 1
+            yield from renderer.line(
+               midpoint-2, yoffset+1, midpoint+2, yoffset+1, stroke=self.insertion_color, **{"stroke-width":stroke_width})
+            yield from renderer.line(
+               midpoint, yoffset, midpoint, yoffset+self.row_height, 
+               stroke=self.insertion_color, **{"stroke-width":stroke_width})
+            yield from renderer.line(
+               midpoint-2, yoffset+self.row_height-1, midpoint+2, yoffset+self.row_height-1, 
+               stroke=self.insertion_color, **{"stroke-width":stroke_width})
+
+    def _draw_clipping(self, renderer, length, genome_position, yoffset):
+        extras = {"stroke":"none"}
+
+        if length >= 5:
+            # always draw clipping, irrespective of consensus sequence or mode
+            curstart = self.scale.topixels(genome_position-0.5)
+            curend = self.scale.topixels(genome_position+0.5)
+
+            width = max(curend-curstart, self.min_cigar_size*2)
+            midpoint = (curstart+curend)/2
+
+            yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color,
+                                     **extras)
+
     def _draw_cigar(self, renderer, interval):
         """
         draw mismatches/insertions/deletions and clipping
@@ -133,7 +204,7 @@ class SingleEndBAMTrack(IntervalTrack):
         read = interval.read
         if read.is_secondary: return
         
-        min_width = 2
+        # min_width = 2
 
         row = self.intervals_to_rows[interval.id]
         yoffset = row*(self.row_height+self.margin_y)
@@ -142,79 +213,25 @@ class SingleEndBAMTrack(IntervalTrack):
         sequence_position = 0
         alnseq = read.query_sequence
 
-        extras = {"stroke":"none"}
-
         for code, length in read.cigartuples:
             length = int(length)
             if code == 0: #"M":
-                for i in range(length):
-                    if genome_position+i < self.scale.start: continue
-                    if genome_position+i >= self.scale.end: break
-
-                    alt = alnseq[sequence_position+i]
-                    ref = self.scale.get_seq(genome_position+i, genome_position+i+1)
-
-                    if alt != ref:
-                        curstart = self.scale.topixels(genome_position+i)
-                        curend = self.scale.topixels(genome_position+i+1)
-
-                        color = self.nuc_colors[alnseq[sequence_position+i]]
-
-                        if not self.mismatch_counts or alt=="N" or self.mismatch_counts.query(alt, genome_position+i):
-                            width = max(curend-curstart, min_width)
-                            midpoint = (curstart+curend)/2
-                            yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=color, 
-                                                     **extras)
+                yield from self._draw_mismatch(renderer, length, genome_position, sequence_position, yoffset, alnseq)
 
                 sequence_position += length
                 genome_position += length
             elif code == 2: #in "D":
                 # if not self.mismatch_counts or self.mismatch_counts.query("DEL", genome_position, genome_position+length+1):
-                if length > self.min_indel_size:
-                    curstart = self.scale.topixels(genome_position)
-                    curend = self.scale.topixels(genome_position+length+1)
-
-                    width = max(curend-curstart, min_width*2)
-                    midpoint = (curstart+curend)/2
-                    ymid = yoffset+self.row_height/2
-
-                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill="white", 
-                                             **extras)
-                    yield from renderer.line(midpoint-width/2, ymid, midpoint+width/2, ymid, 
-                                             stroke="black", **{"stroke-width":1})
-
+                yield from self._draw_deletion(renderer, length, genome_position, yoffset)
 
                 genome_position += length
             elif code == 1: # I
                 # if not self.mismatch_counts or self.mismatch_counts.query("INS", genome_position-2, genome_position+2):
-                if length > self.min_indel_size:
-                    curstart = self.scale.topixels(genome_position-0.5)
-                    curend = self.scale.topixels(genome_position+0.5)
-
-                    midpoint = (curstart+curend)/2
-
-                    stroke_width = 1
-                    yield from renderer.line(
-                       midpoint-2, yoffset+1, midpoint+2, yoffset+1, stroke=self.insertion_color, **{"stroke-width":stroke_width})
-                    yield from renderer.line(
-                       midpoint, yoffset, midpoint, yoffset+self.row_height, 
-                       stroke=self.insertion_color, **{"stroke-width":stroke_width})
-                    yield from renderer.line(
-                       midpoint-2, yoffset+self.row_height-1, midpoint+2, yoffset+self.row_height-1, 
-                       stroke=self.insertion_color, **{"stroke-width":stroke_width})
+                yield from self._draw_insertion(renderer, length, genome_position, yoffset)
 
                 sequence_position += length
             elif code in [4, 5]: #"HS":
-                if length >= 5:
-                    # always draw clipping, irrespective of consensus sequence or mode
-                    curstart = self.scale.topixels(genome_position-0.5)
-                    curend = self.scale.topixels(genome_position+0.5)
-
-                    width = max(curend-curstart, min_width*2)
-                    midpoint = (curstart+curend)/2
-
-                    yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color,
-                                             **extras)
+                yield from self._draw_clipping(renderer, length, genome_position, yoffset)
 
                 if code == 4:
                     sequence_position += length
