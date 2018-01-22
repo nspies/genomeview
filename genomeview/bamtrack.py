@@ -174,14 +174,33 @@ class SingleEndBAMTrack(IntervalTrack):
             midpoint = (curstart+curend)/2
 
             stroke_width = 1
+            width = stroke_width
+
+            font_size = self.row_height * 0.8
+            if length > 5:
+                length_string = str(length)
+                width = len(length_string) * font_size * 0.9
+
             yield from renderer.line(
-               midpoint-2, yoffset+1, midpoint+2, yoffset+1, stroke=self.insertion_color, **{"stroke-width":stroke_width})
+               midpoint-width/2-2, yoffset+stroke_width/2, 
+               midpoint+width/2+2, yoffset+stroke_width/2, stroke=self.insertion_color, 
+               **{"stroke-width":stroke_width})
+
+            yield from renderer.rect(
+               midpoint-width/2, yoffset, width, self.row_height, 
+               fill=self.insertion_color, **{"stroke":"none"})
+
+            # yield from renderer.line(
+            #    midpoint, yoffset, midpoint, yoffset+self.row_height, 
+            #    stroke=self.insertion_color, **{"stroke-width":stroke_width})
             yield from renderer.line(
-               midpoint, yoffset, midpoint, yoffset+self.row_height, 
+               midpoint-width/2-2, yoffset+self.row_height-stroke_width/2, 
+               midpoint+width/2+2, yoffset+self.row_height-stroke_width/2, 
                stroke=self.insertion_color, **{"stroke-width":stroke_width})
-            yield from renderer.line(
-               midpoint-2, yoffset+self.row_height-1, midpoint+2, yoffset+self.row_height-1, 
-               stroke=self.insertion_color, **{"stroke-width":stroke_width})
+
+            if length > 5:
+                yield from renderer.text(midpoint, yoffset+self.row_height*0.8, length_string,
+                    size=font_size, fill="white", **{"font-weight":"bold"})
 
     def _draw_clipping(self, renderer, length, genome_position, yoffset):
         extras = {"stroke":"none"}

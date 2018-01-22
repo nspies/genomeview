@@ -1,10 +1,16 @@
 import pytest
 import os
 
+
+def pytest_configure(config):
+    os.chdir(os.path.dirname(__file__))
+
+    os.makedirs("results", exist_ok=True)
+
 @pytest.fixture
 def reference_path():
     # download chr4 from ucsc if needed
-    reference_path = "chr4.fa"
+    reference_path = "data/chr4.fa"
 
     if not os.path.exists(reference_path):
         import urllib.request
@@ -26,10 +32,11 @@ def bam_doc():
 
     doc = genomeview.Document(900)
     
-    view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+1000, "+", source)
+    view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+250, "+", source)
     doc.add_view(view)
 
-    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "quick_consensus_test.bam")
+    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "data/quick_consensus_test.bam")
+    bam_track_hg002.min_indel_size = 3
     view.add_track(bam_track_hg002)
 
     axis_track = genomeview.Axis("axis")
