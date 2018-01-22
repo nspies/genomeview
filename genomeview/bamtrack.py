@@ -68,9 +68,10 @@ class SingleEndBAMTrack(IntervalTrack):
         self.quick_consensus = True
         self.draw_mismatches = True
         self.include_secondary = True
-        self.min_indel_size = 0
 
-        self.min_cigar_size = 2
+        self.min_indel_size = 0
+        self.min_insertion_label_size = 5
+        self.min_cigar_line_width = 2
         
         self.draw_read_labels = False
 
@@ -145,7 +146,7 @@ class SingleEndBAMTrack(IntervalTrack):
                 color = self.nuc_colors[alnseq[sequence_position+i]]
 
                 if not self.mismatch_counts or alt=="N" or self.mismatch_counts.query(alt, genome_position+i):
-                    width = max(curend-curstart, self.min_cigar_size)
+                    width = max(curend-curstart, self.min_cigar_line_width)
                     midpoint = (curstart+curend)/2
                     yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=color, 
                                              **extras)
@@ -157,7 +158,7 @@ class SingleEndBAMTrack(IntervalTrack):
             curstart = self.scale.topixels(genome_position)
             curend = self.scale.topixels(genome_position+length+1)
 
-            width = max(curend-curstart, self.min_cigar_size*2)
+            width = max(curend-curstart, self.min_cigar_line_width*2)
             midpoint = (curstart+curend)/2
             ymid = yoffset+self.row_height/2
 
@@ -177,7 +178,7 @@ class SingleEndBAMTrack(IntervalTrack):
             width = stroke_width
 
             font_size = self.row_height * 0.8
-            if length > 5:
+            if length >= self.min_insertion_label_size:
                 length_string = str(length)
                 width = len(length_string) * font_size * 0.9
 
@@ -190,16 +191,13 @@ class SingleEndBAMTrack(IntervalTrack):
                midpoint-width/2, yoffset, width, self.row_height, 
                fill=self.insertion_color, **{"stroke":"none"})
 
-            # yield from renderer.line(
-            #    midpoint, yoffset, midpoint, yoffset+self.row_height, 
-            #    stroke=self.insertion_color, **{"stroke-width":stroke_width})
             yield from renderer.line(
                midpoint-width/2-2, yoffset+self.row_height-stroke_width/2, 
                midpoint+width/2+2, yoffset+self.row_height-stroke_width/2, 
                stroke=self.insertion_color, **{"stroke-width":stroke_width})
 
-            if length > 5:
-                yield from renderer.text(midpoint, yoffset+self.row_height*0.8, length_string,
+            if length >= self.min_insertion_label_size:
+                yield from renderer.text(midpoint, yoffset+self.row_height*0.75, length_string,
                     size=font_size, fill="white", **{"font-weight":"bold"})
 
     def _draw_clipping(self, renderer, length, genome_position, yoffset):
@@ -210,7 +208,7 @@ class SingleEndBAMTrack(IntervalTrack):
             curstart = self.scale.topixels(genome_position-0.5)
             curend = self.scale.topixels(genome_position+0.5)
 
-            width = max(curend-curstart, self.min_cigar_size*2)
+            width = max(curend-curstart, self.min_cigar_line_width*2)
             midpoint = (curstart+curend)/2
 
             yield from renderer.rect(midpoint-width/2, yoffset, width, self.row_height, fill=self.clipping_color,
