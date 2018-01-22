@@ -4,7 +4,26 @@ import genomeview
 from genomeview import utilities
 
 
-def visualize_data(file_paths, chrom, start, end, reference_path=None, width=900, axis_on_top=False):
+def visualize_data(file_paths, chrom, start, end, reference_path=None, 
+                   width=900, axis_on_top=False):
+    """
+    Creates a GenomeView document to display the data in the specified
+    files (eg bam, bed, etc).
+
+    Args:
+        file_paths: this is a list of strings specifying files to be rendered. 
+            Currently supports files ending in .bam, .cram and .bed.gz. Files
+            MUST be indexed (eg a .bam.bai or a .bed.gz.tbi file must exist).
+        chrom: chromosome (or contig) to be rendered
+        start: start coordinate of region to be rendered
+        end: end coordinate of region to be rendered
+        reference_path: path to fasta file specifying reference genomic 
+            sequence. This is required in order to display mismatches
+            in bam tracks.
+        width: the pixel width of the document
+        axis_on_top: specifies whether the axis should be added at the bottom
+            (default) or at the top
+    """
     if reference_path is not None:
         source = genomeview.FastaGenomeSource(reference_path)
     else:

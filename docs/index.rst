@@ -7,6 +7,7 @@ GenomeView Overview
 
    quickstart
    details
+   convenience
    axis
    bams
    rendering

@@ -1,7 +1,7 @@
 .. _tutorial:
 
-GenomeView Tutorial
-===================
+GenomeView Quick Start
+======================
 
 GenomeView is a python-based system for visualizing genomic data. This tutorial walks through visualizing reads in a set of BAM files.
 
@@ -13,7 +13,8 @@ Step 1: creating a document
 To visualize a set of BAM files, the :py:func:`genomeview.visualize_data()` convenience function can be used::
 
     dataset_paths = ["/path/to/pacbio_single_end_dataset.bam",
-                     "/path/to/illumina_paired_end_dataset.bam"]
+                     "/path/to/illumina_paired_end_dataset.bam",
+                     "/path/to/genes.bed.gz"]
     reference = "/path/to/reference.fa"
     
     chrom = "chr1"
@@ -22,7 +23,7 @@ To visualize a set of BAM files, the :py:func:`genomeview.visualize_data()` conv
 
     doc = genomeview.visualize_data(dataset_paths, chrom, start, end, reference)
 
-The resulting document then includes a track for the PacBio dataset, a second track for the paired-ended Illumina dataset and an axis showing the location of the genomic coordinates in the window.
+The resulting document then includes a track for the PacBio dataset, a second track for the paired-ended Illumina dataset, a third track showing genes from a bed file, and an axis showing the location of the genomic coordinates in the window.
 
 The document includes a view that will visualize reads in the specified region chrom:start-end. For more details on setting up your own document with fine-grained control over how the tracks are created and visualized, see the :ref:`next section <details>`.
 
