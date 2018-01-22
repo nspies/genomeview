@@ -1,3 +1,5 @@
+import pysam
+
 def match_chrom_format(chrom, keys):
     if chrom in keys:
         return chrom
@@ -10,10 +12,15 @@ def match_chrom_format(chrom, keys):
         return chrom2
     return chrom
 
+def is_paired_end(bam_path, n=100):
+    bam = pysam.AlignmentFile(bam_path)
 
-def render_to_file(doc, outf):
-    """
-    Renders the document to a file-like object.
-    """
-    for l in doc.render():
-        outf.write(l + "\n")
+    count = 0
+    for read in bam.fetch():
+        if read.is_paired:
+            return True
+        if count >= n:
+            break
+
+    return False
+

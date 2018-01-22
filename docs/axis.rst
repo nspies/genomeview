@@ -3,8 +3,8 @@ Adding a coordinate axis
 .. contents:: :local:
 
 
-Single-ended read view
------------------------
+Axis
+----
 
 .. autoclass:: genomeview.Axis
    :members:

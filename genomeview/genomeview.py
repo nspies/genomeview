@@ -76,7 +76,7 @@ class ViewRow:
         
 
 class GenomeView:
-    def __init__(self, name, chrom, start, end, strand, source):
+    def __init__(self, name, chrom, start, end, strand, source=None):
         self.name = name
         self.tracks = collections.OrderedDict()
 
@@ -168,6 +168,8 @@ class Scale(object):
         sequence for the current genomic interval.
         """
         self._setup()
+
+        assert self.source is not None
 
         if start is None:
             start = self.start

@@ -1,7 +1,9 @@
-GenomeView Tutorial
-===================
+.. _details:
 
-GenomeView is a python-based system for visualizing genomic data. This tutorial walks through visualizing a simple 
+GenomeView Details
+==================
+
+In the :ref:`previous section <tutorial>`, we saw how the :py:func:`genomeview.visualize_data()` quickly assembled a document to visualize read data. Here, we'll discuss the behind-the-scenes work of setting up a document, views and adding tracks. These steps are useful if you wish to customize any aspect of the visualization process.
 
 .. contents:: :local:
 
@@ -46,20 +48,11 @@ For example::
     view.add_track(axis_track)
 
 
-Step 4: rendering the document
-------------------------------
+Step 4: exporting the visualization
+-----------------------------------
 
-Documents are rendered into SVG format, a standard text-based format used to display graphical objects on the web.
+As mentioned in the previous section, the document can easily be visualized in-line in jupyter.
 
-If you are using jupyter notebook or jupyterlab, documents can be displayed simply by placing the name of the document on the last line of a cell by itself and running the cell.
+In addition, documents can be exported PDF or PNG files using the :py:func:`genomeview.save()` by changing the file suffix to ".pdf"/".png".
 
-To render the document to file, use the simple ``render_to_file`` command::
-
-    with open("/path/to/output.svg", "w") as out_svg_file:
-        genomeview.render_to_file(doc, out_svg_file)
-
-The resulting SVG file can be visualized in any modern web browser or edited in most standard vector-graphics editing programs (eg Adobe Illustrator, Affinity Designer, Inkscape).
-
-For example, visualizing a 1kb window of a PacBio dataset:
-
-.. image:: images/output.svg
+Note that this conversion requires the installation of `inkscape <https://inkscape.org/>`_, `libRsvg <https://wiki.gnome.org/action/show/Projects/LibRsvg>`_ or `webkitToPDF <https://github.com/nspies/webkitToPDF>`_ are installed.
