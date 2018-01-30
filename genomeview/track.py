@@ -1,5 +1,5 @@
 class Track:
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.name = name
         self.scale = None
         self.height = 100
@@ -14,13 +14,13 @@ class Track:
         yield from renderer.line_with_arrows(250, 55, 400, 55)
         
     def render_label(self, renderer):
-        name = self.name
-        yield from renderer.text_with_background(5, 14, name, anchor="start", size=18, bg_opacity=0.9)
+        if self.name is not None:
+            yield from renderer.text_with_background(5, 14, self.name, anchor="start", size=18, bg_opacity=0.9)
 
         
 class TrackLabel:
-    def __init__(self, name):
-        self.name = name + "_label"
+    def __init__(self, name=None):
+        self.name = name
         self.label = name
         self.height = 35
 

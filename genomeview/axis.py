@@ -3,7 +3,7 @@ import math
 from genomeview.track import Track
 
 class Axis(Track):
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.name = name
         self.scale = None
 

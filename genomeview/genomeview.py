@@ -21,6 +21,15 @@ class Document:
     def add_view(self, view):
         self.elements.append(view)
         
+    def get_tracks(self, name):
+        matching = []
+        for element in self.elements:
+            try:
+                matching.extend(element.get_tracks(name))
+            except AttributeError:
+                pass
+        return matching
+
     def layout(self):
         self.view_width = self.width - self.margin_x*2
         for element in self.elements:
@@ -44,9 +53,9 @@ class Document:
         return "\n".join(self.render())
         
 class ViewRow:
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.name = name
-        self.views = collections.OrderedDict()
+        self.views = []
 
         self.width = None
         self.height = None
@@ -54,31 +63,39 @@ class ViewRow:
         self.space_between = 5
     
     def add_view(self, view):
-        assert view.name not in self.views
-        self.views[view.name] = view
+        self.views.append(view)
         
+    def get_tracks(self, name):
+        matching = []
+        for view in self.views:
+            try:
+                matching.extend(view.get_tracks(name))
+            except AttributeError:
+                pass
+        return matching
+
     def layout(self, width):
         self.width = width
         n_views = len(self.views)
         self.each_width = (self.width - self.space_between*(n_views-1)) / n_views
 
         self.height = 0
-        for name, view in self.views.items():
+        for view in self.views:
             view.layout(self.each_width)
             self.height = max(self.height, view.height)
     
     def render(self, renderer):
         curx = 0
-        for name, view in self.views.items():
+        for view in self.views:
             subrenderer = renderer.subrenderer(x=curx, width=self.each_width, height=view.height)
             yield from subrenderer.render(view)
             curx += self.each_width + self.space_between
         
 
 class GenomeView:
-    def __init__(self, name, chrom, start, end, strand, source=None):
+    def __init__(self, chrom, start, end, strand, source=None, name=None):
         self.name = name
-        self.tracks = collections.OrderedDict()
+        self.tracks = []
 
         self.scale = Scale(chrom, start, end, strand, source)
 
@@ -88,21 +105,27 @@ class GenomeView:
         self.margin_y = 10
     
     def add_track(self, track):
-        assert track.name not in self.tracks
-        self.tracks[track.name] = track
+        self.tracks.append(track)
+
+    def get_tracks(self, name):
+        matching = []
+        for track in self.tracks:
+            if track.name == name:
+                matching.append(track)
+        return matching
         
     def layout(self, width):
         self.pixel_width = width
         self.scale.pixel_width = width
 
         self.height = 0
-        for name, track in self.tracks.items():
+        for track in self.tracks:
             track.layout(self.scale)
             self.height += track.height + self.margin_y
     
     def render(self, renderer):
         cury = 0
-        for name, track in self.tracks.items():
+        for track in self.tracks:
             subrenderer = renderer.subrenderer(y=cury, height=track.height)
             yield from subrenderer.render(track)
             cury += track.height + self.margin_y

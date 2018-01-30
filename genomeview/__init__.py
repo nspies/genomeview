@@ -1,4 +1,4 @@
-__version__ = "0.9.5.1"
+__version__ = "1.0b1"
 
 from genomeview.genomeview import *
 from genomeview.genomesource import *
@@ -22,3 +22,4 @@ from genomeview.intervaltrack import *
 from genomeview.export import render_to_file, save
 
 from genomeview.convenience import visualize_data
+from genomeview.utilities import get_one_track

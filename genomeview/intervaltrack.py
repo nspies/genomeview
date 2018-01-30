@@ -32,7 +32,7 @@ def color_by_strand(interval):
     return color
     
 class IntervalTrack(Track):
-    def __init__(self, name, intervals):
+    def __init__(self, intervals, name=None):
         super().__init__(name)
         self.rows = []
         self.intervals_to_rows = {}

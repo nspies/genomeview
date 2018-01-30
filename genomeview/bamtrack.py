@@ -47,14 +47,14 @@ class SingleEndBAMTrack(IntervalTrack):
             and returns True (yes, display the read) or False (no, don't display). If this 
             function is not specified, by default all reads are shown.
     """
-    def __init__(self, name, bam_path):
+    def __init__(self, bam_path, name=None):
         """
         Args:
-            name (str): name of the track
             bam_path (str): path of the bam file to display
+            name (str): name of the track (optional - use None if you don't want to specify a name)
 
         """
-        super().__init__(name, [])
+        super().__init__([], name=name)
         
         self.bam = pysam.AlignmentFile(bam_path)
         self.intervals = self
@@ -268,8 +268,8 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
     Attributes:
         overlap_color: color used to highlight portions of read pairs that are overlapping one another
     """
-    def __init__(self, name, bam_path):
-        super().__init__(name, bam_path)
+    def __init__(self, bam_path, name=None):
+        super().__init__(bam_path, name)
 
         self.overlap_color = "lime"
 
@@ -404,7 +404,7 @@ class GroupedBAMTrack(Track):
         category_label_fn: a function that nicely formats the category labels. Takes as argument
             the result of the keyfn and should return a string. (Default: render as string)
     """
-    def __init__(self, name, bam_path, keyfn, bam_track_class):
+    def __init__(self, bam_path, keyfn, bam_track_class, name=None):
         """
         """
         super().__init__(name)
@@ -430,7 +430,7 @@ class GroupedBAMTrack(Track):
         categories = sorted(categories)
         self.height = 0
         for category in categories:
-            cur_track = self.bam_track_class(self.category_label_fn(category), self.bam_path)
+            cur_track = self.bam_track_class(self.bam_path, name=self.category_label_fn(category))
             cur_track.include_read_fn = _get_filter_fn(self.keyfn, category)
             cur_track.layout(scale)
             self.height += cur_track.height + self.space_between

@@ -26,10 +26,8 @@ We're starting to get into the action here -- a genome view defines a set of coo
 To create a genome view, you'll first create a genome "source" (basically a link to the reference genome sequence), then derive a view with the coordinates you'd like to visualize::
     
     source = genomeview.FastaGenomeSource("/path/to/hg19.fasta")
-    view = genomeview.GenomeView("locus 1", "chr1", 219158937, 219169063, "+", source)
+    view = genomeview.GenomeView("chr1", 219158937, 219169063, "+", source)
     doc.add_view(view)
-
-Note that all views and tracks take as their first argument a label which must be unique within the containing document or view.
 
 You can add as many genome views as you'd like to a single document, allowing you to visualize multiple genomic loci in the same document.
 
@@ -41,10 +39,10 @@ The next step is to create tracks visualizing the actual data and add them to th
 
 For example::
 
-    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "/path/to/hg002.sorted.bam")
+    bam_track_hg002 = genomeview.SingleEndBAMTrack("/path/to/hg002.sorted.bam", name="HG002")
     view.add_track(bam_track_hg002)
 
-    axis_track = genomeview.Axis("axis")
+    axis_track = genomeview.Axis()
     view.add_track(axis_track)
 
 

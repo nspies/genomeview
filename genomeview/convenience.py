@@ -1,3 +1,4 @@
+import collections
 import os
 
 import genomeview
@@ -11,7 +12,10 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
     files (eg bam, bed, etc).
 
     Args:
-        file_paths: this is a list of strings specifying files to be rendered. 
+        file_paths: this specifies the file paths to be rendered. It must be 
+            either a list/tuple of the paths, or a dictionary mapping 
+            {track_name:path}. (If you are using a python version prior to 3.6, 
+            use collections.ordereddict to ensure the order remains the same.)
             Currently supports files ending in .bam, .cram and .bed.gz. Files
             MUST be indexed (eg a .bam.bai or a .bed.gz.tbi file must exist).
         chrom: chromosome (or contig) to be rendered
@@ -31,7 +35,7 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
 
     doc = genomeview.Document(width)
     
-    view = genomeview.GenomeView("view", chrom, start, end, "+", source)
+    view = genomeview.GenomeView(chrom, start, end, "+", source)
     doc.add_view(view)
 
     def add_axis():
@@ -41,19 +45,25 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
     if axis_on_top:
         add_axis()
 
-    for i, path in enumerate(file_paths):
+    if isinstance(file_paths, collections.Mapping):
+        names = file_paths.keys()
+        file_paths = [file_paths[name] for name in names]
+    else:
+        names = [None] * len(file_paths)
+        file_paths = file_paths
+        
+    for name, path in zip(names, file_paths):
         path = path.lower()
-
         if path.endswith(".bam") or path.endswith(".cram"):
-            if utilities.is_paired_end:
-                name = "BAM{}".format(i)
-                cur_track = genomeview.PairedEndBAMTrack(name, path)
+            if utilities.is_paired_end(path):
+                cur_track = genomeview.PairedEndBAMTrack(path, name=name)
             else:
-                name = "BAM{}".format(i)
-                cur_track = genomeview.SingleEndBAMTrack(name, path)
+                cur_track = genomeview.SingleEndBAMTrack(path, name=name)
+                if utilities.is_long_frag_dataset(path):
+                    cur_track.min_indel_size = 5
+
         elif path.endswith(".bed") or path.endswith(".bed.gz"):
-            name = "BED{}".format(i)
-            cur_track = genomeview.BEDTrack(name, path)
+            cur_track = genomeview.BEDTrack(path, name=name)
 
         else:
             suffix =  os.path.basename(path)

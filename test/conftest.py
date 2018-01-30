@@ -32,14 +32,14 @@ def bam_doc():
 
     doc = genomeview.Document(900)
     
-    view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+250, "+", source)
+    view = genomeview.GenomeView("chr4", 96549060, 96549060+250, "+", source)
     doc.add_view(view)
 
-    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "data/quick_consensus_test.bam")
+    bam_track_hg002 = genomeview.SingleEndBAMTrack("data/quick_consensus_test.bam", name="HG002")
     bam_track_hg002.min_indel_size = 3
     view.add_track(bam_track_hg002)
 
-    axis_track = genomeview.Axis("axis")
+    axis_track = genomeview.Axis()
     view.add_track(axis_track)
 
     return doc

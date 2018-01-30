@@ -10,14 +10,14 @@ from genomeview.utilities import match_chrom_format
 # }
     
 class BEDTrack(IntervalTrack):
-    def __init__(self, name, bed_path):
+    def __init__(self, bed_path, name=None):
         """
         Args:
             name (str): name of the track
             bed_path (str): path of the bed file to display
 
         """
-        super().__init__(name, [])
+        super().__init__([], name=name)
         
         self.bed_path = bed_path
         self.intervals = self

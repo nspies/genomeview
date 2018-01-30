@@ -26,14 +26,14 @@ def test_view_without_source():
 
     doc = genomeview.Document(900)
     
-    view = genomeview.GenomeView("locus 1", "chr4", 96549060, 96549060+1000, "+")
+    view = genomeview.GenomeView("chr4", 96549060, 96549060+1000, "+")
     doc.add_view(view)
 
-    bam_track_hg002 = genomeview.SingleEndBAMTrack("HG002", "data/quick_consensus_test.bam")
+    bam_track_hg002 = genomeview.SingleEndBAMTrack("data/quick_consensus_test.bam", name="HG002")
     bam_track_hg002.draw_mismatches = False
     view.add_track(bam_track_hg002)
 
-    axis_track = genomeview.Axis("axis")
+    axis_track = genomeview.Axis()
     view.add_track(axis_track)
 
     genomeview.save(doc, "results/temp_without_source.svg")
