@@ -53,8 +53,7 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
         file_paths = file_paths
         
     for name, path in zip(names, file_paths):
-        path = path.lower()
-        if path.endswith(".bam") or path.endswith(".cram"):
+        if path.lower().endswith(".bam") or path.lower().endswith(".cram"):
             if utilities.is_paired_end(path):
                 cur_track = genomeview.PairedEndBAMTrack(path, name=name)
             else:
@@ -62,7 +61,7 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
                 if utilities.is_long_frag_dataset(path):
                     cur_track.min_indel_size = 5
 
-        elif path.endswith(".bed") or path.endswith(".bed.gz"):
+        elif path.lower().endswith(".bed") or path.lower().endswith(".bed.gz"):
             cur_track = genomeview.BEDTrack(path, name=name)
 
         else:
