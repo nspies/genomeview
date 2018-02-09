@@ -23,13 +23,13 @@ Step 2: creating the genome views
 
 We're starting to get into the action here -- a genome view defines a set of coordinates to visualize, and allows the addition of a number of tracks displaying different types of data for those coordinates.
 
-To create a genome view, you'll first create a genome "source" (basically a link to the reference genome sequence), then derive a view with the coordinates you'd like to visualize::
+To create a genome view, you'll optionally first create a genome "source" (basically a link to the reference genome sequence). The genome source is only required if rendering mismatches at the nucleotide level. Then, derive a view with the coordinates you'd like to visualize::
     
     source = genomeview.FastaGenomeSource("/path/to/hg19.fasta")
     view = genomeview.GenomeView("chr1", 219158937, 219169063, "+", source)
     doc.add_view(view)
 
-You can add as many genome views as you'd like to a single document, allowing you to visualize multiple genomic loci in the same document.
+You can add as many genome views as you'd like to a single document, allowing you to visualize multiple genomic loci in the same document. Use :py:class:`genomeview.ViewRow` to render multiple views in a horizontal row.
 
 
 Step 3: adding the tracks to the genome view
@@ -49,8 +49,8 @@ For example::
 Step 4: exporting the visualization
 -----------------------------------
 
-As mentioned in the previous section, the document can easily be visualized in-line in jupyter.
+As mentioned in the previous section, the document can easily be visualized in-line in jupyter simply by placing the name of the document variable by itself at the end of a cell.
 
-In addition, documents can be exported PDF or PNG files using the :py:func:`genomeview.save()` by changing the file suffix to ".pdf"/".png".
+In addition, documents can be saved to SVG, PDF or PNG files using the :py:func:`genomeview.save()` (format is inferred from the provided file-name extension).
 
-Note that this conversion requires the installation of `inkscape <https://inkscape.org/>`_, `libRsvg <https://wiki.gnome.org/action/show/Projects/LibRsvg>`_ or `webkitToPDF <https://github.com/nspies/webkitToPDF>`_ are installed.
+Note that conversion to PDF/PNG requires `inkscape <https://inkscape.org/>`_, `libRsvg <https://wiki.gnome.org/action/show/Projects/LibRsvg>`_ or (PDF only) `webkitToPDF <https://github.com/nspies/webkitToPDF>`_ to be installed.
