@@ -21,7 +21,7 @@ class Document:
     def add_view(self, view):
         self.elements.append(view)
         
-    def get_tracks(self, name):
+    def get_tracks(self, name=None):
         matching = []
         for element in self.elements:
             try:
@@ -65,7 +65,7 @@ class ViewRow:
     def add_view(self, view):
         self.views.append(view)
         
-    def get_tracks(self, name):
+    def get_tracks(self, name=None):
         matching = []
         for view in self.views:
             try:
@@ -107,10 +107,10 @@ class GenomeView:
     def add_track(self, track):
         self.tracks.append(track)
 
-    def get_tracks(self, name):
+    def get_tracks(self, name=None):
         matching = []
         for track in self.tracks:
-            if track.name == name:
+            if name is None or track.name == name:
                 matching.append(track)
         return matching
         
