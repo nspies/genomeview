@@ -2,6 +2,7 @@ import collections
 import numpy
 
 from genomeview.track import Track
+from genomeview.utilities import match_chrom_format
 
 COLORS = ["blue", "red", "green", "black"]
 
@@ -65,7 +66,7 @@ class GraphTrack(Track):
         # more than 12 pixels from the top of the track so it doesn't get clipped
         # TODO: this ignores the margin, as of now
         axis_max_y = self.min_y + (self.max_y - self.min_y) * (1-7/self.height)
-        print(self.min_y, axis_max_y)
+
         # ticks = get_ticks(self.min_y, axis_max_y, 4)
         ticks = numpy.linspace(self.min_y, axis_max_y, 4)
 
@@ -81,6 +82,10 @@ class GraphTrack(Track):
 
 
 class BigWigTrack(GraphTrack):
+    """
+    Visualizes continuous-valued data from a bigwig file. Requires pyBigWig
+    module to be installed. Supports using web URLs as well as file paths.
+    """
     def __init__(self, path, nbins=1000, name=None):
         super().__init__(name)
         
@@ -94,7 +99,8 @@ class BigWigTrack(GraphTrack):
         y = []
         binsize = max(1, int((scale.end-scale.start) / self.nbins))
         
-        chrom = scale.chrom
+        chrom = match_chrom_format(scale.chrom, self.bigwig.chroms().keys())
+
         for i in range(scale.start, scale.end, binsize):
             values = self.bigwig.stats(chrom, i, i+binsize)
             x.append(i+binsize/2)

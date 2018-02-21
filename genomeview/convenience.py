@@ -16,8 +16,10 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
             either a list/tuple of the paths, or a dictionary mapping 
             {track_name:path}. (If you are using a python version prior to 3.6, 
             use collections.ordereddict to ensure the order remains the same.)
-            Currently supports files ending in .bam, .cram and .bed.gz. Files
-            MUST be indexed (eg a .bam.bai or a .bed.gz.tbi file must exist).
+            Currently supports files ending in .bam, .cram, .bed, .bed.gz, 
+            .bigbed, or .bigwig (or .bw). Most of these file types require a
+            separate index file to be present (eg a .bam.bai or a .bed.gz.tbi 
+            file must exist).
         chrom: chromosome (or contig) to be rendered
         start: start coordinate of region to be rendered
         end: end coordinate of region to be rendered

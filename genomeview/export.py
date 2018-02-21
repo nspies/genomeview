@@ -100,6 +100,7 @@ def _getExportConverter(exportFormat, requested_converter=None):
         if _checkInkscape():
             return "inkscape"
 
+    raise Exception("No converter found for conversion to {}".format(exportFormat))
     return None
 
 

@@ -48,7 +48,9 @@ class FastaGenomeSource(GenomeSource):
     """ 
     A genome source based on a Fasta file. 
 
-    This is essentially a pickle-able wrapper for pyfaidx.Fasta
+    This is essentially a pickle-able wrapper for pysam.FastaFile; 
+    as such, it is capable of using indexed fasta files available
+    via http/ftp/s3/etc.
     """
     def __init__(self, path):
         self.path = path
@@ -57,19 +59,22 @@ class FastaGenomeSource(GenomeSource):
     def get_seq(self, chrom, start, end, strand):
         chrom = match_chrom_format(chrom, self.keys())
         
-        seq = self.fasta[chrom][start:end+1]
+        # seq = self.fasta[chrom][start:end+1]
+        seq = self.fasta.fetch(chrom, start, end+1)
         if strand == "-":
             seq = reverse_comp(seq)
         return seq
 
     def keys(self):
-        return list(self.fasta.keys())
+        return list(self.fasta.references)
 
     @property
     def fasta(self):
         if self._fasta is None:
-            import pyfaidx
-            self._fasta = pyfaidx.Fasta(self.path, as_raw=True)
+            # import pyfaidx
+            # self._fasta = pyfaidx.Fasta(self.path, as_raw=True)
+            import pysam
+            self._fasta = pysam.FastaFile(self.path)
         return self._fasta
 
     def __getstate__(self):

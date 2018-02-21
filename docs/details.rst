@@ -23,7 +23,9 @@ Step 2: creating the genome views
 
 We're starting to get into the action here -- a genome view defines a set of coordinates to visualize, and allows the addition of a number of tracks displaying different types of data for those coordinates.
 
-To create a genome view, you'll optionally first create a genome "source" (basically a link to the reference genome sequence). The genome source is only required if rendering mismatches at the nucleotide level. Then, derive a view with the coordinates you'd like to visualize::
+To create a genome view, you'll optionally first create a genome "source" (basically a link to the reference genome sequence). The genome source is only required if rendering mismatches at the nucleotide level. Note that the reference file can be streamed over the internet if the index file is also present; for example, this version of `hs37d5 <ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz>`_ (aka hg19/hg37).
+
+Then, derive a view with the coordinates you'd like to visualize::
     
     source = genomeview.FastaGenomeSource("/path/to/hg19.fasta")
     view = genomeview.GenomeView("chr1", 219158937, 219169063, "+", source)
