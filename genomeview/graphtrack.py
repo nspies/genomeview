@@ -2,7 +2,6 @@ import collections
 import numpy
 
 from genomeview.track import Track
-from genomeview.axis import get_ticks
 
 COLORS = ["blue", "red", "green", "black"]
 
@@ -14,7 +13,7 @@ class Series:
         self.label = label
         
 class GraphTrack(Track):
-    def __init__(self, name="graph", x=None, y=None):
+    def __init__(self, name=None, x=None, y=None):
         super().__init__(name)
 
         self.series = collections.OrderedDict()
@@ -58,7 +57,7 @@ class GraphTrack(Track):
                 x2 = self.scale.topixels(series.x[i+1])
                 y1 = self.ytopixels(series.y[i])
                 y2 = self.ytopixels(series.y[i+1])
-                                         
+                
                 yield from renderer.line(x1, y1, x2, y2, 
                     **{"stroke-width":1, "stroke":series.color, "stroke-linecap":"square"})
 
@@ -66,13 +65,42 @@ class GraphTrack(Track):
         # more than 12 pixels from the top of the track so it doesn't get clipped
         # TODO: this ignores the margin, as of now
         axis_max_y = self.min_y + (self.max_y - self.min_y) * (1-7/self.height)
-        ticks = get_ticks(self.min_y, axis_max_y, 4)
+        print(self.min_y, axis_max_y)
+        # ticks = get_ticks(self.min_y, axis_max_y, 4)
+        ticks = numpy.linspace(self.min_y, axis_max_y, 4)
 
-        yield from renderer.line(1, self.ytopixels(ticks[0][0]), 1, self.ytopixels(ticks[-1][0]), 
+        yield from renderer.line(1, self.ytopixels(ticks[0]), 1, self.ytopixels(ticks[-1]), 
                                  **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
-        for tick, label in ticks:
+        for tick in ticks:
+            label = "{:.1g}".format(tick)
             y = self.ytopixels(tick)
             yield from renderer.line(1, y, 10, y, 
                                      **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
             yield from renderer.text(14, y, label, anchor="start", fill="gray")
             
+
+
+class BigWigTrack(GraphTrack):
+    def __init__(self, path, nbins=1000, name=None):
+        super().__init__(name)
+        
+        import pyBigWig
+        self.bigwig = pyBigWig.open(path)
+        self.nbins = 1000
+
+    def layout(self, scale):
+        super().layout(scale)
+        x = []
+        y = []
+        binsize = max(1, int((scale.end-scale.start) / self.nbins))
+        
+        chrom = scale.chrom
+        for i in range(scale.start, scale.end, binsize):
+            values = self.bigwig.stats(chrom, i, i+binsize)
+            x.append(i+binsize/2)
+            y.append(values[0])
+        
+        self.series = {"vals":Series(x, y, color="black")}
+        
+        self.min_y = min(y)
+        self.max_y = max(y)

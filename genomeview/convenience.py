@@ -64,6 +64,9 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
         elif path.lower().endswith(".bed") or path.lower().endswith(".bed.gz") or path.lower().endswith(".bigbed"):
             cur_track = genomeview.BEDTrack(path, name=name)
 
+        elif path.lower().endswith(".bigwig") or path.lower().endswith(".bw"):
+            cur_track = genomeview.BigWigTrack(path, name=name)
+
         else:
             suffix =  os.path.basename(path)
             raise ValueError("Unknown file suffix: {}".format(suffix))
