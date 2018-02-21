@@ -1,4 +1,4 @@
-import pysam
+import logging
 
 from genomeview.intervaltrack import Interval, IntervalTrack
 from genomeview.utilities import match_chrom_format
@@ -9,6 +9,42 @@ from genomeview.utilities import match_chrom_format
 #     "start"; 1,
 # }
     
+def fetch(path, chrom, start, end):
+    try:
+        yield from fetch_from_tabix(path, chrom, start, end)
+        return
+    except:
+        pass
+
+    try:
+        yield from fetch_from_bigbed(path, chrom, start, end)
+        return
+    except:
+        pass
+
+
+def fetch_from_tabix(path, chrom, start, end):
+    import pysam
+
+    bed = pysam.TabixFile(path)
+
+    chrom = match_chrom_format(chrom, bed.contigs)
+    for locus in bed.fetch(chrom, start, end):
+        locus = locus.split()
+        yield locus
+
+def fetch_from_bigbed(path, chrom, start, end):
+    import pyBigWig
+
+    bed = pyBigWig.open(path)
+    assert bed.isBigBed(), "Oops, for some reason I was expecting a bed file: {}".format(path)
+
+    chrom = match_chrom_format(chrom, bed.chroms().keys())
+    for cur_start, cur_end, bed_line in bed.entries(chrom, start, end):
+        bed_line = bed_line.split()
+        yield [chrom, cur_start, cur_end] + bed_line
+
+
 class BEDTrack(IntervalTrack):
     def __init__(self, bed_path, name=None):
         """
@@ -39,17 +75,22 @@ class BEDTrack(IntervalTrack):
         chrom = self.scale.chrom
         start, end = self.scale.start, self.scale.end
         
-        try:
-            bed = pysam.TabixFile(self.bed_path)
+        for locus in fetch(self.bed_path, chrom, start, end):
+            if not self.include_locus_fn or self.include_locus_fn(locus):
+                yield locus
 
-            chrom = match_chrom_format(chrom, bed.contigs)
-            for locus in bed.fetch(chrom, start, end):
-                locus = locus.split()
-                if not self.include_locus_fn or self.include_locus_fn(locus):
-                    yield locus
 
-        except OSError:
-            raise NotImplementedError()
+        # try:
+        #     bed = pysam.TabixFile(self.bed_path)
+
+        #     chrom = match_chrom_format(chrom, bed.contigs)
+        #     for locus in bed.fetch(chrom, start, end):
+        #         locus = locus.split()
+        #         if not self.include_locus_fn or self.include_locus_fn(locus):
+        #             yield locus
+
+        # except OSError:
+        #     raise NotImplementedError()
 
 
 
