@@ -22,6 +22,15 @@ def fetch(path, chrom, start, end):
     except:
         pass
 
+    try:
+        yield from fetch_from_plainbed(path, chrom, start, end)
+        return
+    except:
+        raise
+        pass
+
+    raise NotImplementedError("Not sure how to handle this file: {}".format(path))
+
 
 def fetch_from_tabix(path, chrom, start, end):
     import pysam
@@ -43,6 +52,21 @@ def fetch_from_bigbed(path, chrom, start, end):
     for cur_start, cur_end, bed_line in bed.entries(chrom, start, end):
         bed_line = bed_line.split()
         yield [chrom, cur_start, cur_end] + bed_line
+
+def fetch_from_plainbed(path, chrom, start, end):
+    found_chrom = False
+    for line in open(path):
+        fields = line.strip().split()
+        if fields[0] != chrom: continue
+        found_chrom = True
+
+        cur_start, cur_end = fields[1:3]
+        if int(cur_end) < start or int(cur_start) > end: continue
+        yield fields
+
+    if not found_chrom:
+        warning = "Didn't find chromosome {}; make sure it's formatted correctly (eg 'chr1' vs '1')".format(chrom)
+        logging.warn(warning)
 
 
 class BEDTrack(IntervalTrack):
