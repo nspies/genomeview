@@ -21,6 +21,13 @@ def test_export_to_png(bam_doc):
     genomeview.save(bam_doc, "results/temp.png")
 
 
+def test_arrows(reference_path):
+    for i in [100, 1000, 2000, 5000]:
+        print(i)
+        doc = genomeview.visualize_data(["data/illumina.bam"], "chr4", 96549060, 96549060+i, reference_path)
+        genomeview.save(doc, "results/temp_{}.png".format(i))
+
+
 def test_view_without_source():
     import genomeview
 

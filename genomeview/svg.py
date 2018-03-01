@@ -115,6 +115,32 @@ class SVG(GraphicsBackend):
                 more=more)
         yield a
         
+    def block_arrow(self, left, top, width, height, arrow_width, direction, **kwdargs):
+        coords = {"stroke": kwdargs.pop("stroke", "none"), "fill":kwdargs.pop("fill", "black")}
+        coords["more"] = _addOptions(kwdargs)
+
+        if direction == "right":
+            path = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2} L {x3} {y3} """ \
+                   """L {x4} {y4} z" stroke="{stroke}" fill="{fill}" {more}/>"""
+            coords["x0"], coords["y0"] = left, top,
+            coords["x1"], coords["y1"] = left+width, top
+            coords["x2"], coords["y2"] = left+width+arrow_width, top+height/2
+            coords["x3"], coords["y3"] = left+width, top+height
+            coords["x4"], coords["y4"] = left, top+height
+        else:
+            path = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2} L {x3} {y3} """ \
+                   """L {x4} {y4} z" stroke="{stroke}" fill="{fill}" {more}/>"""
+
+            coords["x0"], coords["y0"] = left, top
+            coords["x1"], coords["y1"] = left+width, top
+            coords["x2"], coords["y2"] = left+width, top+height
+            coords["x3"], coords["y3"] = left, top+height
+            coords["x4"], coords["y4"] = left-arrow_width, top+height/2
+
+        path = path.format(**coords)
+        yield path
+
+
     def start_clipped_group(self, x, y, width, height, name):
         yield """<clipPath id="clip_path_{}"><rect x="{}" y="{}" width="{}" height="{}" /></clipPath>""".format(
             name, x, y, width, height)
@@ -152,6 +178,9 @@ class Renderer:
 
     def arrow(self, x, y, *args, **kwdargs):
         yield from self.backend.arrow(x+self.x, y+self.y, *args, **kwdargs)
+
+    def block_arrow(self, left, top, *args, **kwdargs):
+        yield from self.backend.block_arrow(left+self.x, top+self.y, *args, **kwdargs)
 
     def render(self, element):
         yield "<!-- {} -->".format(element.name)
