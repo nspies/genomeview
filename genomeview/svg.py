@@ -1,4 +1,5 @@
 import itertools
+import numpy
 
 class GraphicsBackend:
     pass
@@ -56,10 +57,9 @@ class SVG(GraphicsBackend):
         yield """<line x1="{x1:.2f}" x2="{x2:.2f}" y1="{y1:.2f}" y2="{y2:.2f}" {more} />""".format(
             x1=x1, x2=x2,  y1=y1, y2=y2, more=_addOptions(kwdargs, defaults))
 
-    def line_with_arrows(self, x1, y1, x2, y2, n=5, direction="right", color="black", arrowKwdArgs=None, **kwdargs):
-        self.n = n
-        self.direction = direction
-        self.arrowKwdArgs = arrowKwdArgs
+    def line_with_arrows(self, x1, y1, x2, y2, n=None, arrows=None, direction="right",
+                         color="black", filled=True,
+                         arrow_scale=None, arrowKwdArgs=None, **kwdargs):
         
         defaults = {"stroke":color}
         defaults.update(kwdargs)
@@ -67,28 +67,49 @@ class SVG(GraphicsBackend):
         yield from self.line(x1, y1, x2, y2, **defaults)
         if arrowKwdArgs is None: arrowKwdArgs = {}
 
-        for i in range(1, self.n+1):
-            x_arrow = x1+float(x2-x1)*i/n
-            y_arrow = y1+float(y2-y1)*i/n
-            yield from self.arrow(x_arrow, y_arrow, direction, 
-                color=color, scale=arrowKwdArgs.get("stroke-width", 1), **arrowKwdArgs)
+        if arrow_scale is None:
+            arrow_scale = kwdargs.get("stroke-width", 1)
 
-    def arrow(self, x, y, direction, color="black", scale=1.0, **kwdargs):
+        if n is not None:
+            arrows = numpy.arange(n) / n
+
+        for arrow in arrows:
+            x_arrow = x1+float(x2-x1)*arrow
+            y_arrow = y1+float(y2-y1)*arrow
+            yield from self.arrow(x_arrow, y_arrow, direction, filled=filled,
+                color=color, scale=arrow_scale, **arrowKwdArgs)
+
+    def arrow(self, x, y, direction, color="black", scale=1.0, filled=True, **kwdargs):
         more = _addOptions(kwdargs)
 
+        if filled:
+            fill = "fill=\"{color}\"".format(color=color)
+            close = " z" # closes the path
+        else:
+            fill = "fill=\"transparent\""
+            close = ""
+
         if direction == "right":
-            a = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2} z" fill="{color}" xcenter="{xcenter}" {more}/>""".format(
-                x0=(x-10*scale), y0=(y-5*scale), 
-                x1=(x), y1=y, 
-                x2=(x-10*scale), y2=(y+5*scale),
+            path = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2}{close}" stroke="{color}" """ \
+                   """{fill} xcenter="{xcenter}" {more}/>"""
+            a = path.format(
+                x0=(x-2.5*scale), y0=(y-5*scale), 
+                x1=(x+2.5), y1=y, 
+                x2=(x-2.5*scale), y2=(y+5*scale),
+                close=close,
+                fill=fill,
                 color=color,
                 xcenter=x,
                 more=more)
         elif direction == "left":
-            a = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2} z" fill="{color}" xcenter="{xcenter}" {more}/>""".format(
-                x0=(x+10*scale), y0=(y-5*scale), 
-                x1=(x), y1=y, 
-                x2=(x+10*scale), y2=(y+5*scale),
+            path = """<path d="M {x0} {y0} L {x1} {y1} L {x2} {y2}{close}" stroke="{color}" """ \
+                   """{fill} xcenter="{xcenter}" {more}/>"""
+            a = path.format(
+                x0=(x+2.5*scale), y0=(y-5*scale), 
+                x1=(x-2.5), y1=y, 
+                x2=(x+2.5*scale), y2=(y+5*scale),
+                close=close,
+                fill=fill,
                 color=color,
                 xcenter=x,
                 more=more)
