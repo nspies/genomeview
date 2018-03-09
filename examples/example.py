@@ -11,7 +11,7 @@ end =   224398899
 
 doc = genomeview.visualize_data(dataset_paths, chrom, start, end, reference)
 
-genomeview.save(doc, "example.pdf")
+genomeview.save(doc, "example.svg")
 
 # import genomeview.track
 
