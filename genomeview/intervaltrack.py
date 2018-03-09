@@ -88,7 +88,7 @@ class IntervalTrack(Track):
         color = self.color_fn(interval)
         temp_label = interval.label
         if interval.label is None:
-            temp_label = "{}_{}".format(interval.id, 1 if interval.read.is_read1 else 2)
+            temp_label = interval.id
 
         # yield from renderer.rect(start, top, end-start, self.row_height, fill=color, 
         #     **{"stroke":"none", "id":temp_label})

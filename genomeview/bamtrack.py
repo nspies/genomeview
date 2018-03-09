@@ -338,7 +338,12 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
         for i, read_end in enumerate(reads):
             interval = Interval(read_end.query_name, chrom, read_end.reference_start,
                                 read_end.reference_end, not read_end.is_reverse)
+            
+            if self.draw_read_labels:
+                interval.label = "{}_{}".format(read_end.query_name, 1 if read_end.is_read1 else 2)
+
             interval.read = read_end
+
             yield from self.draw_interval(renderer, interval)
 
             if i == 1 and self.draw_read_labels:
