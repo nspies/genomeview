@@ -60,11 +60,11 @@ def tx_from_bedfields(bedfields):
     return Transcript(chrom, start, end, strand, name, coding_start, coding_end, exons, color)
 
 def fetch(path, chrom, start, end):
-    # try:
-    yield from fetch_from_tabix(path, chrom, start, end)
-    return
-    # except:
-    #     pass
+    try:
+        yield from fetch_from_tabix(path, chrom, start, end)
+        return
+    except:
+        pass
 
     try:
         yield from fetch_from_bigbed(path, chrom, start, end)
