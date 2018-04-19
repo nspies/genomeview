@@ -55,7 +55,8 @@ class SingleEndBAMTrack(IntervalTrack):
 
         """
         super().__init__([], name=name)
-        
+
+        self.bam_path = bam_path
         self.bam = pysam.AlignmentFile(bam_path)
         self.intervals = self
         self.mismatch_counts = None
@@ -118,7 +119,11 @@ class SingleEndBAMTrack(IntervalTrack):
         if self.quick_consensus and self.draw_mismatches:
             self.mismatch_counts = MismatchCounts(
                 self.scale.chrom, self.scale.start, self.scale.end)
-            self.mismatch_counts.tally_reads(self.bam)
+
+            # workaround for some quirk of pysam with crams and large cigars
+            # (or something like that, opening a fresh file handle seems to fix the issue)
+            bam = pysam.AlignmentFile(self.bam_path)
+            self.mismatch_counts.tally_reads(bam)
 
     def layout_interval(self, interval):
         super().layout_interval(interval)
@@ -158,6 +163,9 @@ class SingleEndBAMTrack(IntervalTrack):
             curstart = self.scale.topixels(genome_position)
             curend = self.scale.topixels(genome_position+length+1)
 
+            if genome_position > self.scale.end: return
+            if genome_position+length < self.scale.start: return
+            
             width = max(curend-curstart, self.min_cigar_line_width*2)
             midpoint = (curstart+curend)/2
             ymid = yoffset+self.row_height/2
@@ -171,6 +179,9 @@ class SingleEndBAMTrack(IntervalTrack):
         if length > self.min_indel_size:
             curstart = self.scale.topixels(genome_position-0.5)
             curend = self.scale.topixels(genome_position+0.5)
+
+            if genome_position > self.scale.end: return
+            if genome_position < self.scale.start: return
 
             midpoint = (curstart+curend)/2
 

@@ -27,11 +27,10 @@ def get_one_track(doc_or_view, name):
 def is_paired_end(bam_path, n=100):
     bam = pysam.AlignmentFile(bam_path)
 
-    count = 0
-    for read in bam.fetch():
+    for i, read in enumerate(bam.fetch()):
         if read.is_paired:
             return True
-        if count >= n:
+        if i >= n:
             break
 
     return False
