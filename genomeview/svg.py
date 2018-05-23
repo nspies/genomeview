@@ -94,7 +94,7 @@ class SVG(GraphicsBackend):
                    """{fill} xcenter="{xcenter}" {more}/>"""
             a = path.format(
                 x0=(x-2.5*scale), y0=(y-5*scale), 
-                x1=(x+2.5), y1=y, 
+                x1=(x+2.5*scale), y1=y, 
                 x2=(x-2.5*scale), y2=(y+5*scale),
                 close=close,
                 fill=fill,
@@ -106,7 +106,7 @@ class SVG(GraphicsBackend):
                    """{fill} xcenter="{xcenter}" {more}/>"""
             a = path.format(
                 x0=(x+2.5*scale), y0=(y-5*scale), 
-                x1=(x-2.5), y1=y, 
+                x1=(x-2.5*scale), y1=y, 
                 x2=(x+2.5*scale), y2=(y+5*scale),
                 close=close,
                 fill=fill,
