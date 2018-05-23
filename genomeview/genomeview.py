@@ -64,7 +64,14 @@ class ViewRow:
     
     def add_view(self, view):
         self.views.append(view)
-        
+    
+    def get_views(self, name=None):
+        matching = []
+        for view in self.views:
+            if name is None or view.name==name:
+                matching.extend(view)
+        return matching
+
     def get_tracks(self, name=None):
         matching = []
         for view in self.views:

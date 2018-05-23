@@ -31,6 +31,8 @@ def color_by_strand(interval):
         color = "#8C8FCE"
     return color
     
+
+
 class IntervalTrack(Track):
     def __init__(self, intervals, name=None):
         super().__init__(name)
@@ -86,8 +88,18 @@ class IntervalTrack(Track):
         color = self.color_fn(interval)
         temp_label = interval.label
         if interval.label is None:
-            temp_label = "{}_{}".format(interval.id, 1 if interval.read.is_read1 else 2)
-        yield from renderer.rect(start, top, end-start, self.row_height, fill=color, **{"stroke":"none", "id":temp_label})
+            temp_label = interval.id
+
+        # yield from renderer.rect(start, top, end-start, self.row_height, fill=color, 
+        #     **{"stroke":"none", "id":temp_label})
+
+        arrow_width = min(self.row_height / 2, self.margin_x * 0.7, self.scale.relpixels(30))
+        direction = "right" if interval.strand=="+" else "left"
+
+        yield from renderer.block_arrow(start, top, end-start, self.row_height, 
+            arrow_width=arrow_width, direction=direction,
+            fill=color, **{"stroke":"none", "id":temp_label})
+
         if interval.label is not None:
             yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
         
