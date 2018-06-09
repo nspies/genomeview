@@ -192,11 +192,14 @@ class SingleEndBAMTrack(IntervalTrack):
             font_size = self.row_height * 0.8
             draw_label = False
             if length >= self.min_insertion_label_size:
+                draw_label = True
+            else:
                 length_string = str(length)
                 label_width = len(length_string) * font_size * 0.9
                 if label_width < self.scale.relpixels(length*1.5):
                     draw_label = True
-                    width = label_width
+            if draw_label:
+                width = label_width
 
             yield from renderer.line(
                midpoint-width/2-ibeam_extension, yoffset+stroke_width/2, 
