@@ -191,11 +191,12 @@ class SingleEndBAMTrack(IntervalTrack):
             
             font_size = self.row_height * 0.8
             draw_label = False
+            length_string = str(length)
+            label_width = len(length_string) * font_size * 0.9
+
             if length >= self.min_insertion_label_size:
                 draw_label = True
             else:
-                length_string = str(length)
-                label_width = len(length_string) * font_size * 0.9
                 if label_width < self.scale.relpixels(length*1.5):
                     draw_label = True
             if draw_label:
