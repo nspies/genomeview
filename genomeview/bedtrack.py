@@ -55,7 +55,7 @@ def tx_from_bedfields(bedfields):
         exons = [(int(start)+exon_start, int(start)+exon_start+exon_length)
                  for exon_start, exon_length in zip(exon_starts, exon_lengths)]
 
-        print("^^^", bedfields, exon_starts, exon_lengths, exons)
+        # print("^^^", bedfields, exon_starts, exon_lengths, exons)
 
     return Transcript(chrom, start, end, strand, name, coding_start, coding_end, exons, color)
 
@@ -169,14 +169,14 @@ class BEDTrack(IntervalTrack):
 
 
     def draw_interval(self, renderer, interval):
-        print(interval)
+        # print(interval)
         interval_pixel_width = self.scale.relpixels(interval.tx.end-interval.tx.start)
         if interval_pixel_width < 12:
             # could probably improve on this
             yield from super().draw_interval(renderer, interval)
             return
                     
-        print(1)
+        # print(1)
         row = self.intervals_to_rows[interval.id]
         top = row*(self.row_height+self.margin_y)
         top_thin = top + self.row_height/2 - self.thin_width/2
@@ -188,7 +188,7 @@ class BEDTrack(IntervalTrack):
             temp_label = interval.id
         
         tx = interval.tx
-        print(2)
+        # print(2)
 
         # Draw the thin lines between "exons", along with arrows pointing in transcript direction
         for i in range(len(tx.exons)-1):
@@ -201,19 +201,19 @@ class BEDTrack(IntervalTrack):
             direction = "right" if interval.strand=="+" else "left"
             n_arrows = int(round((cur_end-cur_start) / (self.row_height*0.75)))
 
-            print("  ", i, cur_exon, next_exon)
+            # print("  ", i, cur_exon, next_exon)
 
             arrows = (numpy.arange(1, n_arrows+1) / (n_arrows+1))# * 0.8 + 0.1
 
-            print(tx.exons[i])
+            # print(tx.exons[i])
             yield from renderer.line_with_arrows(cur_start, midline, cur_end, midline,
                 direction=direction, color=color, arrows=arrows, filled=False,
                 arrow_scale=self.thinnest_width*0.4, arrowKwdArgs={"stroke-width":self.thinnest_width*0.75})
 
-        print(3)
+        # print(3)
 
         # Draw the "exons", both thin (non-coding/UTR) and thick (coding)
-        print(interval, tx.exons)
+        # print(interval, tx.exons)
         for which in ["thin", "thick"]:
             for cur_start, cur_end in tx.exons:
                 if which == "thick":
