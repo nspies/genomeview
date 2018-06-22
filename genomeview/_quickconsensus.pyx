@@ -107,6 +107,9 @@ class MismatchCounts(object):
         total = self.counts[:,start:(end+1)].sum(axis=0)
         total = total.astype(float)
 
+        if total == 0:
+            return False
+            
         if (type_ == "INS"):
             insertions = self.insertions[start:(end+1)]
             if (insertions.sum() / total.sum()) > 0.2:
