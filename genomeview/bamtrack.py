@@ -386,7 +386,7 @@ class PairedEndBAMTrack(SingleEndBAMTrack):
         for read_name, read in read_buffer.items():
             yield from self.draw_read_pair(renderer, [read])
         
-        for x in  self.render_label(renderer):
+        for x in self.render_label(renderer):
             yield x
 
 

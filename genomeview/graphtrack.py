@@ -79,6 +79,8 @@ class GraphTrack(Track):
                                      **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
             yield from renderer.text(14, y, label, anchor="start", fill="gray")
             
+        for x in self.render_label(renderer):
+            yield x
 
 
 class BigWigTrack(GraphTrack):
