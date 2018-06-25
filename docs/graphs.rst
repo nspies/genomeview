@@ -1,5 +1,5 @@
-Visualizing continuous genomic data
-===================================
+Plotting continuous genomic data
+================================
 .. contents:: :local:
 
 
