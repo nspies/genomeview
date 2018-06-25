@@ -13,7 +13,14 @@ class Series:
         self.color = color
         self.label = label
         
+
 class GraphTrack(Track):
+    """
+    Visualizes quantitative data as a line across coordinates within the current genomic view.
+
+    One or more datasets can be visualized (with different colors) on the same track using the
+    ``add_series()`` method.
+    """
     def __init__(self, name=None, x=None, y=None):
         super().__init__(name)
 
@@ -29,6 +36,17 @@ class GraphTrack(Track):
         self.ymargin = 5
         
     def add_series(self, x, y, color=None, label=None):
+        """
+        Add a dataset corresponding to a single line in the track (ie, a "series"). Note that
+        while a single GraphTrack can visualize multiple datasets, they are all plotted on 
+        the same y-axis and so should share the same units.
+
+        Arguments:
+            x: a list of genomic coordinates
+            y: a list of data values; each y-value must correspond to a single x-value
+            color: an SVG color for the line being plotted
+            label: an optional text label for the graph being plotted (currently unused)
+        """
         if label is None:
             label = "series_{}".format(len(self.series))
             

@@ -4,7 +4,7 @@ Rendering shapes and text
 Drawing shapes and text
 -----------------------
 
-Each of the functions below takes as arguments information about the screen coordinates, and yields a series of SVG tages specifying lines, shapes and text to be drawn. Each functional also accepts optional ``kwdargs`` which can include additional SVG attributes such as ``fill`` and ``stroke`` colors.
+Each of the functions below takes as arguments information about the screen coordinates, and yields a series of SVG tags specifying lines, shapes and text to be drawn. Each function also accepts optional ``kwdargs`` which can include additional SVG attributes such as ``fill`` and ``stroke`` colors.
 
 .. autoclass:: genomeview.svg.Renderer
 

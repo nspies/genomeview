@@ -32,14 +32,14 @@ class SingleEndBAMTrack(IntervalTrack):
         insertion_color, deletion_color, clipping_color (str): SVG colors for insertions, 
              deletions and soft/hard clipping
 
-        quick_consensus: specify whether the quick consensus mode should be used. When activated, 
+        quick_consensus (bool): specify whether the quick consensus mode should be used. When activated, 
             mismatches wrt the reference genome are only shown when at least several reads support
             a variant at that position (useful when displaying high-error rate data types eg 
             pacbio). Only relevant if draw_mismatches is also True. (default: True)
-        draw_mismatches: whether to show mismatches with respect to the reference genome.
+        draw_mismatches (bool): whether to show mismatches with respect to the reference genome.
             (default: True).
 
-        include_secondary: whether to draw alignments specified as "secondary" in the BAM flags 
+        include_secondary (bool): whether to draw alignments specified as "secondary" in the BAM flags 
             (default: True).
         
         include_read_fn: callback function used to specify which reads should be included in 
@@ -81,7 +81,10 @@ class SingleEndBAMTrack(IntervalTrack):
         
     def fetch(self):
         """
-        iterator over reads from the bam file
+        Iterator over reads from the bam file
+
+        Overload this method in subclasses to feed this track reads from a different source
+        (for example, reads that are already in memory, rather than being read from a file).
         """
         chrom = self.match_chrom_format(self.scale.chrom)
         start, end = self.scale.start, self.scale.end
@@ -107,7 +110,7 @@ class SingleEndBAMTrack(IntervalTrack):
     def match_chrom_format(self, chrom):
         """
         Ensures that the input argument `chrom` matches the chromosome name formatting in
-        the bam file being visualized (eg "chr14" vs "14").
+        the bam file being visualized (ie "chr14" vs "14").
         """
         return match_chrom_format(chrom, self.bam.references)
         
@@ -129,6 +132,10 @@ class SingleEndBAMTrack(IntervalTrack):
         super().layout_interval(interval)
 
     def draw_interval(self, renderer, interval):
+        """
+        Draw a read and then, if ``self.draw_mismatches`` is True, draw mismatches/indels 
+        on top.
+        """
         yield from super().draw_interval(renderer, interval)
 
         if self.draw_mismatches:

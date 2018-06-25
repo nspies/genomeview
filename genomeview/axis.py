@@ -3,6 +3,9 @@ import math
 from genomeview.track import Track
 
 class Axis(Track):
+    """
+    Displays coordinates for the current genomic view
+    """
     def __init__(self, name=None):
         self.name = name
         self.scale = None
@@ -46,6 +49,15 @@ class Axis(Track):
                     prev_right = x
 
 def get_ticks(start, end, target_n_labels=10):
+    """
+    Tries to put an appropriate number of ticks at nice round coordinates between 
+    the genomic positions `start` and `end`. Tries but doesn't guarantee to create 
+    `target_n_labels` number of ticks / labels.
+
+    Returns:
+        a list of tuples (coordinate, label), where "label" is a nicely formatted 
+        string describing the coordinate
+    """
     ticks = []
     start = int(start)
     end = int(end)

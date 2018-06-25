@@ -9,6 +9,7 @@ GenomeView Overview
    convenience
    axis
    bams
+   graphs
    rendering
    advanced_usage
 

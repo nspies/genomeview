@@ -8,3 +8,5 @@ Axis
 
 .. autoclass:: genomeview.Axis
    :members:
+
+.. autofunction:: genomeview.get_ticks
