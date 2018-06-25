@@ -48,6 +48,7 @@ Or to install the bleeding edge from github:
 
     pip install -U git+https://github.com/nspies/genomeview.git
 
+To display `bigWig <https://genome.ucsc.edu/goldenpath/help/bigWig.html>`_ graphical tracks, the `pyBigWig <https://github.com/deeptools/pyBigWig>`_ python package must also be installed, eg ``pip install pyBigWig``.
 
 Quick Start
 ===========
