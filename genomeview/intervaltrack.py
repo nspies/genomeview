@@ -93,12 +93,16 @@ class IntervalTrack(Track):
         # yield from renderer.rect(start, top, end-start, self.row_height, fill=color, 
         #     **{"stroke":"none", "id":temp_label})
 
-        arrow_width = min(self.row_height / 2, self.margin_x * 0.7, self.scale.relpixels(30))
-        direction = "right" if interval.strand=="+" else "left"
+        if interval.strand is None:
+            yield from renderer.rect(start, top, end-start, self.row_height, fill=color, 
+                **{"stroke":"none", "id":temp_label})
+        else:
+            arrow_width = min(self.row_height / 2, self.margin_x * 0.7, self.scale.relpixels(30))
+            direction = "right" if interval.strand=="+" else "left"
 
-        yield from renderer.block_arrow(start, top, end-start, self.row_height, 
-            arrow_width=arrow_width, direction=direction,
-            fill=color, **{"stroke":"none", "id":temp_label})
+            yield from renderer.block_arrow(start, top, end-start, self.row_height, 
+                arrow_width=arrow_width, direction=direction,
+                fill=color, **{"stroke":"none", "id":temp_label})
 
         if interval.label is not None:
             yield from renderer.text(end+self.label_distance, top+self.row_height-2, interval.label, anchor="start")
