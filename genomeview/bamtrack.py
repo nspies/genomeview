@@ -264,7 +264,7 @@ class SingleEndBAMTrack(IntervalTrack):
 
                 sequence_position += length
                 genome_position += length
-            elif code == 2: #in "D":
+            elif code in [2,3]: #in "D":
                 # if not self.mismatch_counts or self.mismatch_counts.query("DEL", genome_position, genome_position+length+1):
                 yield from self._draw_deletion(renderer, length, genome_position, yoffset)
 
