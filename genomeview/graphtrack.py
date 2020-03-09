@@ -122,9 +122,10 @@ class BigWigTrack(GraphTrack):
         chrom = match_chrom_format(scale.chrom, self.bigwig.chroms().keys())
 
         for i in range(scale.start, scale.end, binsize):
-            values = self.bigwig.stats(chrom, i, i+binsize)
+            value = self.bigwig.stats(chrom, i, i+binsize)[0]
+            value = 0.0 if value==None else value
             x.append(i+binsize/2)
-            y.append(values[0])
+            y.append(value)
         
         self.series = {"vals":Series(x, y, color="black")}
         
