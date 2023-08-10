@@ -8,6 +8,7 @@ COLORS = ["blue", "red", "green", "black"]
 
 class Series:
     def __init__(self, x, y, color=None, label=None):
+        x, y = zip(*sorted(zip(x,y)))
         self.x = x
         self.y = y
         self.color = color
@@ -91,7 +92,13 @@ class GraphTrack(Track):
         yield from renderer.line(1, self.ytopixels(ticks[0]), 1, self.ytopixels(ticks[-1]), 
                                  **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
         for tick in ticks:
-            label = "{:.1g}".format(tick)
+            if self.max_y > 1_000:
+                label = "{:.1g}".format(tick)
+            elif self.max_y < 1:
+                label = "{:.1f}".format(tick)
+            else:
+                label = "{:,.0f}".format(tick)
+
             y = self.ytopixels(tick)
             yield from renderer.line(1, y, 10, y, 
                                      **{"stroke-width":2, "stroke":"gray", "stroke-linecap":"square"})
