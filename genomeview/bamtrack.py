@@ -1,10 +1,14 @@
 import collections
+import logging
 import pysam
+
+import os
 
 from genomeview.track import Track
 from genomeview.intervaltrack import Interval, IntervalTrack
 from genomeview import MismatchCounts
 from genomeview.utilities import match_chrom_format
+from genomeview.graphtrack import GraphTrack
 
 
 def allreads(read):
@@ -149,7 +153,11 @@ class SingleEndBAMTrack(IntervalTrack):
             if genome_position+i >= self.scale.end: break
 
             alt = alnseq[sequence_position+i]
-            ref = self.scale.get_seq(genome_position+i, genome_position+i+1)
+            try:
+                ref = self.scale.get_seq(genome_position+i, genome_position+i+1)
+            except AssertionError:
+                logging.warn("Unable to get reference sequence; will not draw mismatches")
+                return
 
             if alt != ref:
                 curstart = self.scale.topixels(genome_position+i)
@@ -470,3 +478,42 @@ class GroupedBAMTrack(Track):
             subrenderer = renderer.subrenderer(y=cury, height=subtrack.height)
             yield from subrenderer.render(subtrack)
             cury += subtrack.height + self.space_between
+
+
+class BAMCoverageTrack(GraphTrack):
+    def __init__(self, bam_path, name=None):
+        if name is None:
+            name = os.path.basename(bam_path.split(".")[0])
+        super().__init__(name=name)
+        
+        self.bam_path = bam_path
+        self.bam = pysam.AlignmentFile(bam_path)
+        
+    def layout(self, scale):
+        import numpy as np
+        import pandas as pd
+
+        super().layout(scale)
+
+        chrom = match_chrom_format(scale.chrom, self.bam.references)
+        counts = collections.defaultdict(int)
+        
+        for read in self.bam.fetch(chrom, scale.start, scale.end):
+            for i in read.get_reference_positions():
+                counts[i] += 1
+        
+        x = np.arange(scale.start, scale.end+1)
+        y = []
+        for i, curx in enumerate(x):
+            y.append(counts[curx])
+        y = np.array(y)
+        
+        s = pd.Series(y, index=x).sort_index()
+        s = s[(s!=s.shift(-1))|(s!=s.shift(1))]
+        
+        x = s.index
+        y = s.values
+        
+        if len(x):
+            self.add_series(x, y)
+            
