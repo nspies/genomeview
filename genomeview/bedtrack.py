@@ -5,11 +5,21 @@ import numpy
 from genomeview.intervaltrack import Interval, IntervalTrack
 from genomeview.utilities import match_chrom_format
 
-
+DEFAULT_FIELD_DEFS = {
+    "chrom":0,
+    "start":1,
+    "end":2,
+    "name":3,
+    "strand":5,
+    "coding_start":6,
+    "coding_end":7,
+    "exon_lengths":10,
+    "exon_starts":11,
+}
 
 class Transcript:
     def __init__(self, chrom, start, end, strand="+", name=None, coding_start=None,
-                 coding_end=None, exons=None, color=None):
+                 coding_end=None, exons=None, color=None, **kwargs):
         self.chrom = chrom
         self.start = int(start)
         self.end = int(end)
@@ -31,49 +41,59 @@ class Transcript:
 
         self.color = color
 
-def tx_from_bedfields(bedfields):
+        self.kwargs = kwargs
+
+def tx_from_bedfields(bedfields, field_defs=None):
     """
     create a Transcript instance from bed fields (ie the result of
     bed_line.strip().split())
     """
 
-    chrom, start, end = bedfields[0:3]
-    name = coding_start = coding_end = exons = color = None
-    strand = "+"
+    if field_defs is None:
+        field_defs = DEFAULT_FIELD_DEFS
 
-    if len(bedfields) >= 4:
-        name = bedfields[3]
-    if len(bedfields) >= 6:
-        strand = bedfields[5]
-    if len(bedfields) >= 7:
-        coding_start = bedfields[6]
-        coding_end = bedfields[7]
-    if len(bedfields) >= 12 and int(bedfields[9]) > 0:
-        exon_lengths = [int(x) for x in bedfields[10].split(",") if x]
-        exon_starts = [int(x) for x in bedfields[11].split(",") if x]
+    values = {}
+    for field_name, field in field_defs.items():
+        cur_value = None
+        if len(bedfields) > field:
+            cur_value = bedfields[field]
+        values[field_name] = cur_value
+    
+    assert values["chrom"] is not None
+    assert values["start"] is not None
+    assert values["end"] is not None
 
-        exons = [(int(start)+exon_start, int(start)+exon_start+exon_length)
+    if values["strand"] is None:
+        values["strand"] = "+"
+    
+    values["exons"] = None
+    if values["exon_starts"]:
+        exon_lengths = [int(x) for x in values.pop("exon_lengths").split(",") if x]
+        exon_starts = [int(x) for x in values.pop("exon_starts").split(",") if x]
+
+        values["exons"] = [(int(values["start"])+exon_start, int(values["start"])+exon_start+exon_length)
                  for exon_start, exon_length in zip(exon_starts, exon_lengths)]
 
-        # print("^^^", bedfields, exon_starts, exon_lengths, exons)
+    return Transcript(**values)
 
-    return Transcript(chrom, start, end, strand, name, coding_start, coding_end, exons, color)
-
-def fetch(path, chrom, start, end):
+def fetch(path, chrom, start, end, field_defs=None):
     try:
-        yield from fetch_from_tabix(path, chrom, start, end)
+        yield from fetch_from_tabix(path, chrom, start, end, field_defs=field_defs)
         return
     except:
         pass
 
     try:
-        yield from fetch_from_bigbed(path, chrom, start, end)
+        yield from fetch_from_bigbed(path, chrom, start, end, field_defs=field_defs)
         return
+    except ImportError:
+        logging.warn("Unable to import pyBigWig")
     except:
+        raise
         pass
 
     try:
-        yield from fetch_from_plainbed(path, chrom, start, end)
+        yield from fetch_from_plainbed(path, chrom, start, end, field_defs=field_defs)
         return
     except:
         raise
@@ -82,7 +102,7 @@ def fetch(path, chrom, start, end):
     raise NotImplementedError("Not sure how to handle this file: {}".format(path))
 
 
-def fetch_from_tabix(path, chrom, start, end):
+def fetch_from_tabix(path, chrom, start, end, field_defs=None):
     import pysam
 
     bed = pysam.TabixFile(path)
@@ -90,9 +110,9 @@ def fetch_from_tabix(path, chrom, start, end):
     chrom = match_chrom_format(chrom, bed.contigs)
     for locus in bed.fetch(chrom, start, end):
         locus = locus.split()
-        yield tx_from_bedfields(locus)
+        yield tx_from_bedfields(locus, field_defs=field_defs)
 
-def fetch_from_bigbed(path, chrom, start, end):
+def fetch_from_bigbed(path, chrom, start, end, field_defs=None):
     import pyBigWig
 
     bed = pyBigWig.open(path)
@@ -101,9 +121,9 @@ def fetch_from_bigbed(path, chrom, start, end):
     chrom = match_chrom_format(chrom, bed.chroms().keys())
     for cur_start, cur_end, bed_line in bed.entries(chrom, start, end):
         bed_line = bed_line.split()
-        yield tx_from_bedfields([chrom, cur_start, cur_end] + bed_line)
+        yield tx_from_bedfields([chrom, cur_start, cur_end] + bed_line, field_defs=field_defs)
 
-def fetch_from_plainbed(path, chrom, start, end):
+def fetch_from_plainbed(path, chrom, start, end, field_defs=None):
     found_chrom = False
     for line in open(path):
         fields = line.strip().split()
@@ -112,7 +132,7 @@ def fetch_from_plainbed(path, chrom, start, end):
 
         cur_start, cur_end = fields[1:3]
         if int(cur_end) < start or int(cur_start) > end: continue
-        yield tx_from_bedfields(fields)
+        yield tx_from_bedfields(fields, field_defs=field_defs)
 
     if not found_chrom:
         warning = "Didn't find chromosome {}; make sure it's formatted correctly (eg 'chr1' vs '1')".format(chrom)
@@ -142,14 +162,16 @@ class BEDTrack(IntervalTrack):
 
         self.min_exon_width = 1
 
+        self.field_defs = None
+
     def fetch(self):
         """
-        iterator over reads from the bam file
+        iterator over reads from the bed file
         """
         chrom = self.scale.chrom
         start, end = self.scale.start, self.scale.end
         
-        for locus in fetch(self.bed_path, chrom, start, end):
+        for locus in fetch(self.bed_path, chrom, start, end, field_defs=self.field_defs):
             if not self.include_locus_fn or self.include_locus_fn(locus):
                 yield locus
 
