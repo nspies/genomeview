@@ -516,3 +516,4 @@ class BAMCoverageTrack(GraphTrack):
         
         if len(x):
             self.add_series(x, y)
+            
