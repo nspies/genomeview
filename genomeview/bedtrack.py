@@ -19,14 +19,13 @@ DEFAULT_FIELD_DEFS = {
 
 class Transcript:
     def __init__(self, chrom, start, end, strand="+", name=None, coding_start=None,
-                 coding_end=None, exons=None, color=None, alt_name=None, **kwargs):
+                 coding_end=None, exons=None, color=None, **kwargs):
         self.chrom = chrom
         self.start = int(start)
         self.end = int(end)
         self.strand = strand
 
         self.name = name
-        self.alt_name = alt_name
 
         self.coding_start = None
         if coding_start is not None:
