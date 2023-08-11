@@ -1,0 +1,29 @@
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install genomeview
+        run: pip install -e .
+      - name: Setup test
+        run: |
+          pip install ipykernel pytest nbmake
+          python -m ipykernel install --user --name python3
+      - name: Run test
+        run: pytest --nbmake examples/*ipynb
+     
