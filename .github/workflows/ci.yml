@@ -22,8 +22,8 @@ jobs:
         run: pip install -e .
       - name: Setup test
         run: |
-          pip install ipykernel papermill
+          pip install ipykernel pytest nbmake
           python -m ipykernel install --user --name python3
       - name: Run test
-        run: papermill examples/examples.ipynb examples/examples.ipynb
+        run: pytest --nbmake examples/*ipynb
      
