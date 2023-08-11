@@ -47,7 +47,7 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
     if axis_on_top:
         add_axis()
 
-    if isinstance(file_paths, collections.Mapping):
+    if isinstance(file_paths, collections.abc.Mapping):
         names = file_paths.keys()
         file_paths = [file_paths[name] for name in names]
     else:
