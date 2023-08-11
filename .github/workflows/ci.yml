@@ -25,5 +25,5 @@ jobs:
           pip install ipykernel papermill
           python -m ipykernel install --user --name python3
       - name: Run test
-        run: papermill examples/examples.ipynb
+        run: papermill examples/examples.ipynb examples/examples.ipynb
      
