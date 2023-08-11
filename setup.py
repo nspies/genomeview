@@ -10,32 +10,16 @@ def get_version(string):
     return version_str
 
 
-def get_includes():
-    class Includes:
-        def __iter__(self):
-            import pysam
-            import numpy
-            return iter(pysam.get_include()+[numpy.get_include()])
-        def __getitem__(self, i):
-            return list(self)[i]
-    return Includes()
+setup(
+    name="genomeview",
+    version=get_version(open('genomeview/__init__.py').read()),
+    description="genomeview",
+    author="Noah Spies",
+    packages=find_packages(),
 
-def get_defines():
-    class Defines:
-        def __iter__(self):
-            import pysam
-            return iter(pysam.get_defines())
-        def __getitem__(self, i):
-            return list(self)[i]
-    return Defines()
-
-
-setup(name="genomeview",
-      version=get_version(open('genomeview/__init__.py').read()),
-      description="genomeview",
-      author="Noah Spies",
-      packages=find_packages(),
-
-      install_requires=["pysam", "numpy", "pandas", "pyBigWig"], 
-      python_requires=">=3.3"
-     )
+    # setup_requires=["pypandoc"],
+    install_requires=["pysam", "numpy", "pandas", "pyBigWig"], 
+    python_requires=">=3.3",
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
+)
