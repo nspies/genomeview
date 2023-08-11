@@ -63,7 +63,7 @@ def visualize_data(file_paths, chrom, start, end, reference_path=None,
                 if utilities.is_long_frag_dataset(path):
                     cur_track.min_indel_size = 5
 
-        elif path.lower().endswith(".bed") or path.lower().endswith(".bed.gz") or path.lower().endswith(".bigbed"):
+        elif path.lower().endswith(".bed") or path.lower().endswith(".bed.gz") or path.lower().endswith(".bigbed") or path.lower().endswith(".bb"):
             cur_track = genomeview.BEDTrack(path, name=name)
 
         elif path.lower().endswith(".bigwig") or path.lower().endswith(".bw"):

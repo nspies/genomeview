@@ -21,6 +21,16 @@ class Document:
     def add_view(self, view):
         self.elements.append(view)
         
+    def add_track(self, track):
+        for element in self.elements:
+            try:
+                element.add_track(track)
+                break
+            except AttributeError:
+                continue
+        else:
+            raise Exception("No GenomeView found in Document")
+
     def get_tracks(self, name=None):
         matching = []
         for element in self.elements:
@@ -139,7 +149,7 @@ class GenomeView:
         
     
     
-class Scale(object):
+class Scale:
     """
     Maintains information about a projection of a specific genomic
     interval into screen coordinates.
@@ -162,6 +172,9 @@ class Scale(object):
 
         if self.start >= self.end:
             raise ValueError("End coordinate must be greater than start coordinate; you specified {}:{}-{}".format(chrom, start, end))
+
+    def __len__(self):
+        return self.end - self.start + 1
 
     def _setup(self):
         if self._param == self.pixel_width: return
