@@ -36,6 +36,6 @@ setup(name="genomeview",
       author="Noah Spies",
       packages=find_packages(),
 
-      install_requires=["pysam", "numpy", "pandas"], 
+      install_requires=["pysam", "numpy", "pandas", "pyBigWig"], 
       python_requires=">=3.3"
      )
