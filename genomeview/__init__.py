@@ -1,4 +1,4 @@
-__version__ = "1.1.1"
+__version__ = "1.1.4"
 
 from genomeview.genomeview import *
 from genomeview.genomesource import *
